@@ -43,15 +43,14 @@ jobs:
         with:
           name: app-release
           path: build/app/outputs/flutter-apk/app-release.apk
-
-      - name: 🚀 Create Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
-        with:
-          name: "Release ${{ github.ref_name }}"
-          files: build/app/outputs/flutter-apk/app-release.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: 📤 Send APK to Telegram
+        if: success()
+        run: |
+          curl -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument \
+          -F chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -F document=@build/app/outputs/flutter-apk/app-release.apk \
+          -F caption="📦 APK terbaru berhasil di-build 🚀"
 
       - name: 📢 Notify Telegram (Success)
         if: success()
@@ -66,3 +65,13 @@ jobs:
           curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
           -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
           -d text="❌ Build gagal di workflow GitHub Actions"
+      
+      - name: 🚀 Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Release ${{ github.ref_name }}"
+          files: build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
