@@ -47,10 +47,21 @@ jobs:
       - name: 📤 Send APK to Telegram
         if: success()
         run: |
+          BUILD_TIME=$(date '+%d %b %Y %H:%M UTC')
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+
           curl -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument \
-          -F chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-          -F document=@build/app/outputs/flutter-apk/app-release.apk \
-          -F caption="📦 APK terbaru berhasil di-build 🚀"
+            -F chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -F document=@build/app/outputs/flutter-apk/app-release.apk \
+            -F caption="📦 SIPANDA Build Success
+
+🔖 Version: ${{ github.ref_name }}
+🌿 Branch: ${{ github.ref_name }}
+👨‍💻 Commit: ${SHORT_SHA}
+🕒 Build Time: ${BUILD_TIME}
+
+✅ APK berhasil di-build dan siap diinstall." \
+            -F parse_mode=Markdown
 
       - name: 📢 Notify Telegram (Success)
         if: success()
