@@ -5,7 +5,16 @@ import 'package:provider/provider.dart';
 import 'core/network/api_client.dart';
 import 'features/auth/auth_injection.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
-import 'providers/providers.dart';
+import 'features/auth/presentation/providers/anak_provider.dart';
+import 'features/auth/presentation/providers/dashboard_provider.dart';
+import 'features/auth/presentation/providers/imunisasi_provider.dart';
+import 'features/auth/presentation/providers/jadwal_provider.dart';
+import 'features/auth/presentation/providers/laporan_provider.dart';
+import 'features/auth/presentation/providers/notifikasi_provider.dart';
+import 'features/auth/presentation/providers/pemeriksaan_provider.dart';
+import 'features/auth/presentation/providers/pengguna_provider.dart';
+import 'features/auth/presentation/providers/posyandu_provider.dart';
+import 'features/auth/presentation/providers/validasi_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,7 +32,7 @@ class SipandaApp extends StatelessWidget {
         // Auth — Clean Architecture
         ...authProviders(),
 
-        // Data providers — via barrel export
+        // Data providers
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
         ChangeNotifierProvider(create: (_) => AnakProvider()),
         ChangeNotifierProvider(create: (_) => PemeriksaanProvider()),
@@ -33,6 +42,7 @@ class SipandaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => LaporanProvider()),
         ChangeNotifierProvider(create: (_) => PosyanduProvider()),
         ChangeNotifierProvider(create: (_) => ValidasiProvider()),
+        ChangeNotifierProvider(create: (_) => PenggunaProvider()),
       ],
       child: MaterialApp(
         title: 'SIPANDA',
@@ -79,6 +89,7 @@ class _AppEntryState extends State<AppEntry> {
   }
 }
 
+// ── Router per Role ───────────────────────────────────────────────────
 class _HomeRouter extends StatelessWidget {
   final AuthProvider auth;
   const _HomeRouter({required this.auth});
@@ -94,6 +105,7 @@ class _HomeRouter extends StatelessWidget {
   }
 }
 
+// ── Placeholder Screens ───────────────────────────────────────────────
 class _SplashScreen extends StatelessWidget {
   const _SplashScreen();
   @override
@@ -119,7 +131,10 @@ class _BidanHome extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('Halo Bidan, ${context.watch<AuthProvider>().pengguna?.username}!'),
+          Text(
+            'Halo Bidan, '
+            '${context.watch<AuthProvider>().pengguna?.username}!',
+          ),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () => context.read<AuthProvider>().logout(),
@@ -140,7 +155,10 @@ class _KaderHome extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('Halo Kader, ${context.watch<AuthProvider>().pengguna?.username}!'),
+          Text(
+            'Halo Kader, '
+            '${context.watch<AuthProvider>().pengguna?.username}!',
+          ),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () => context.read<AuthProvider>().logout(),
