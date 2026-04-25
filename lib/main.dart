@@ -2,8 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'core/network/api_client.dart';
 import 'features/auth/auth_injection.dart';
+
+// Providers
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/auth/presentation/providers/anak_provider.dart';
 import 'features/auth/presentation/providers/dashboard_provider.dart';
@@ -15,6 +18,10 @@ import 'features/auth/presentation/providers/pemeriksaan_provider.dart';
 import 'features/auth/presentation/providers/pengguna_provider.dart';
 import 'features/auth/presentation/providers/posyandu_provider.dart';
 import 'features/auth/presentation/providers/validasi_provider.dart';
+
+// Screens
+import 'features/auth/presentation/screens/login_screen.dart';
+import 'features/auth/presentation/screens/dashboard_kader_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,10 +36,10 @@ class SipandaApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // Auth — Clean Architecture
+        // Auth
         ...authProviders(),
 
-        // Data providers
+        // App Providers
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
         ChangeNotifierProvider(create: (_) => AnakProvider()),
         ChangeNotifierProvider(create: (_) => PemeriksaanProvider()),
@@ -45,13 +52,14 @@ class SipandaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PenggunaProvider()),
       ],
       child: MaterialApp(
-        title: 'SIPANDA',
         debugShowCheckedModeBanner: false,
+        title: 'SIPANDA',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF2E86AB),
-          ),
           useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF0B6AAE),
+          ),
+          scaffoldBackgroundColor: const Color(0xFFF5F7FA),
         ),
         home: const AppEntry(),
       ),
@@ -70,6 +78,7 @@ class _AppEntryState extends State<AppEntry> {
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AuthProvider>().checkSession();
     });
@@ -78,113 +87,115 @@ class _AppEntryState extends State<AppEntry> {
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
-      builder: (context, auth, _) {
+      builder: (_, auth, __) {
         return switch (auth.status) {
-          AuthStatus.unknown         => const _SplashScreen(),
-          AuthStatus.unauthenticated => const _LoginScreen(),
-          AuthStatus.authenticated   => _HomeRouter(auth: auth),
+          AuthStatus.unknown => const _SplashScreen(),
+          AuthStatus.unauthenticated => const LoginScreen(),
+          AuthStatus.authenticated => _HomeRouter(auth: auth),
         };
       },
     );
   }
 }
 
-// ── Router per Role ───────────────────────────────────────────────────
+// =======================================================
+// ROUTER BERDASARKAN ROLE
+// =======================================================
+
 class _HomeRouter extends StatelessWidget {
   final AuthProvider auth;
+
   const _HomeRouter({required this.auth});
 
   @override
   Widget build(BuildContext context) {
-    return switch (auth.pengguna?.role) {
-      'Bidan'    => const _BidanHome(),
-      'Kader'    => const _KaderHome(),
+    final role = auth.pengguna?.role;
+
+    return switch (role) {
+      'Bidan' => const _BidanHome(),
+      'Kader' => const DashboardKaderScreen(),
       'OrangTua' => const _OrangTuaHome(),
-      _          => const _LoginScreen(),
+      _ => const LoginScreen(),
     };
   }
 }
 
-// ── Placeholder Screens ───────────────────────────────────────────────
+// =======================================================
+// SPLASH
+// =======================================================
+
 class _SplashScreen extends StatelessWidget {
   const _SplashScreen();
+
   @override
-  Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: CircularProgressIndicator()),
-  );
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
 }
 
-class _LoginScreen extends StatelessWidget {
-  const _LoginScreen();
-  @override
-  Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: Text('Halaman Login — segera dibuat')),
-  );
-}
+// =======================================================
+// BIDAN
+// =======================================================
 
 class _BidanHome extends StatelessWidget {
   const _BidanHome();
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Dashboard Bidan')),
-    body: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Halo Bidan, '
-            '${context.watch<AuthProvider>().pengguna?.username}!',
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => context.read<AuthProvider>().logout(),
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
-    ),
-  );
-}
 
-class _KaderHome extends StatelessWidget {
-  const _KaderHome();
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Dashboard Kader')),
-    body: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Halo Kader, '
-            '${context.watch<AuthProvider>().pengguna?.username}!',
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => context.read<AuthProvider>().logout(),
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _OrangTuaHome extends StatelessWidget {
-  const _OrangTuaHome();
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Beranda')),
+      appBar: AppBar(
+        title: const Text('Dashboard Bidan'),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Halo, ${auth.pengguna?.username ?? '-'}!'),
+            Text('Halo Bidan, ${auth.pengguna?.username ?? '-'}'),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => context.read<AuthProvider>().logout(),
+              onPressed: () {
+                context.read<AuthProvider>().logout();
+              },
+              child: const Text('Logout'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// =======================================================
+// ORANG TUA
+// =======================================================
+
+class _OrangTuaHome extends StatelessWidget {
+  const _OrangTuaHome();
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Beranda'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Halo, ${auth.pengguna?.username ?? '-'}'),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                context.read<AuthProvider>().logout();
+              },
               child: const Text('Logout'),
             ),
           ],
