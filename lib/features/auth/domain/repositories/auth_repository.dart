@@ -19,7 +19,7 @@ abstract class AuthRepository {
   /// Login untuk Orang Tua menggunakan NIK Balita + Tanggal Lahir
   Future<AuthEntity> loginOrangTua({
     required String nikBalita,
-    required String tglLahir,
+    required String tglLahir, required String nik,
   });
 
   /// Login menggunakan akun Google

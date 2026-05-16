@@ -33,31 +33,31 @@ class PemeriksaanModel {
 
   factory PemeriksaanModel.fromJson(Map<String, dynamic> json) {
     return PemeriksaanModel(
-      idPemeriksaan:  json['id_pemeriksaan'] as int,
-      nikAnak:        json['nik_anak'] as String,
-      idKader:        json['id_kader'] as int,
-      nipBidan:       json['nip_bidan'] as String?,
-      idJadwal:       json['id_jadwal'] as int?,
-      tglPemeriksaan: DateTime.parse(json['tgl_pemeriksaan'] as String),
-      beratBadan:     (json['berat_badan'] as num?)?.toDouble(),
-      tinggiBadan:    (json['tinggi_badan'] as num?)?.toDouble(),
-      lingkarKepala:  (json['lingkar_kepala'] as num?)?.toDouble(),
-      keluhan:        json['keluhan'] as String?,
-      namaAnak:       json['anak']?['nama_anak'] as String?,
-      namaKader:      json['kader']?['nama_kader'] as String?,
-      namaBidan:      json['bidan']?['nama_bidan'] as String?,
+      idPemeriksaan: json['id_periksa'] as int,
+      nikAnak: json['nik_anak'] as String,
+      idKader: json['id_kader'] as int,
+      nipBidan: json['nip_bidan'] as String?,
+      idJadwal: json['id_jadwal'] as int?,
+      tglPemeriksaan: DateTime.parse(json['tgl_periksa'] as String),
+      beratBadan: (json['berat_badan'] as num?)?.toDouble(),
+      tinggiBadan: (json['tinggi_badan'] as num?)?.toDouble(),
+      lingkarKepala: (json['lingkar_kepala'] as num?)?.toDouble(),
+      keluhan: json['keluhan'] as String?,
+      namaAnak: json['anak']?['nama_anak'] as String?,
+      namaKader: json['kader']?['nama_kader'] as String?,
+      namaBidan: json['bidan']?['nama_bidan'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'nik_anak':        nikAnak,
-    'id_kader':        idKader,
-    if (nipBidan != null)  'nip_bidan':  nipBidan,
-    if (idJadwal != null)  'id_jadwal':  idJadwal,
-    'tgl_pemeriksaan': tglPemeriksaan.toIso8601String().split('T').first,
-    if (beratBadan != null)    'berat_badan':    beratBadan,
-    if (tinggiBadan != null)   'tinggi_badan':   tinggiBadan,
+    'nik_anak': nikAnak,
+    'id_kader': idKader,
+    if (nipBidan != null) 'nip_bidan': nipBidan,
+    if (idJadwal != null) 'id_jadwal': idJadwal,
+    'tgl_periksa': tglPemeriksaan.toIso8601String().split('T').first,
+    if (beratBadan != null) 'berat_badan': beratBadan,
+    if (tinggiBadan != null) 'tinggi_badan': tinggiBadan,
     if (lingkarKepala != null) 'lingkar_kepala': lingkarKepala,
-    if (keluhan != null)       'keluhan':        keluhan,
+    if (keluhan != null) 'keluhan': keluhan,
   };
 }

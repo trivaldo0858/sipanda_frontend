@@ -101,7 +101,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                color: _primary.withOpacity(0.3),
+                color: _primary.withValues(alpha: 0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -160,7 +160,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
+                  color: Colors.black.withValues(alpha: 0.06),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),
@@ -198,7 +198,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
   // ── Summary Card ──────────────────────────────────────────────────
   Widget _buildSummaryCard() {
     return Consumer<DashboardProvider>(
-      builder: (_, dash, __) {
+      builder: (_, dash, _) {
         final total = dash.totalAnak;
         return Container(
           width: double.infinity,
@@ -208,7 +208,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -262,7 +262,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: _primary.withOpacity(0.1),
+                  color: _primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
@@ -281,7 +281,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
   // ── Schedule Card ─────────────────────────────────────────────────
   Widget _buildScheduleCard() {
     return Consumer<JadwalProvider>(
-      builder: (_, jadwal, __) {
+      builder: (_, jadwal, _) {
         final upcoming = jadwal.upcoming;
         final jadwalTerdekat = upcoming.isNotEmpty ? upcoming.first : null;
 
@@ -297,7 +297,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: _primary.withOpacity(0.35),
+                color: _primary.withValues(alpha: 0.35),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
@@ -314,7 +314,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(
@@ -329,7 +329,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Text(
@@ -465,7 +465,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
@@ -478,7 +478,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
               width: 54,
               height: 54,
               decoration: BoxDecoration(
-                color: _primary.withOpacity(0.1),
+                color: _primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(menu.icon, color: _primary, size: 26),
@@ -503,7 +503,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
   // ── Aktivitas Terbaru ─────────────────────────────────────────────
   Widget _buildAktivitasTerbaru() {
     return Consumer<DashboardProvider>(
-      builder: (_, dash, __) {
+      builder: (_, dash, _) {
         final list = dash.pemeriksaanTerbaru;
 
         return Column(
@@ -575,7 +575,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 2),
           ),
@@ -588,7 +588,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: _primary.withOpacity(0.08),
+              color: _primary.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -634,7 +634,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.12),
+              color: statusColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -666,7 +666,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -690,7 +690,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
                   ),
                   decoration: BoxDecoration(
                     color: isActive
-                        ? _primary.withOpacity(0.1)
+                        ? _primary.withValues(alpha: 0.1)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(14),
                   ),

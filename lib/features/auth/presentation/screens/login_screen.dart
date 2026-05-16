@@ -15,14 +15,14 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen>
     with TickerProviderStateMixin {
   // ── Controllers ───────────────────────────────────────────────────
-  final _usernameCtrl  = TextEditingController();
-  final _passwordCtrl  = TextEditingController();
-  final _nikCtrl       = TextEditingController();
-  final _formKey       = GlobalKey<FormState>();
+  final _usernameCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+  final _nikCtrl = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   // ── State ─────────────────────────────────────────────────────────
-  int _selectedRole    = 0; // 0=Kader, 1=Bidan, 2=OrangTua
-  bool _obscurePass    = true;
+  int _selectedRole = 0; // 0=Kader, 1=Bidan, 2=OrangTua
+  bool _obscurePass = true;
   DateTime? _tglLahir;
 
   // ── Animation ─────────────────────────────────────────────────────
@@ -32,14 +32,14 @@ class _LoginScreenState extends State<LoginScreen>
   late Animation<Offset> _slideAnim;
 
   // ── Colors ────────────────────────────────────────────────────────
-  static const _primary     = Color(0xFF1B6FBE);
+  static const _primary = Color(0xFF1B6FBE);
   static const _primaryDark = Color(0xFF0D4F8C);
-  static const _primaryLight= Color(0xFF4A9FE0);
-  static const _bgColor     = Color(0xFFEEF3F8);
-  static const _inputBg     = Color(0xFFF0F4F8);
-  static const _textDark    = Color(0xFF1A2B3C);
-  static const _textGrey    = Color(0xFF8A9BB0);
-  static const _cardBg      = Colors.white;
+  static const _primaryLight = Color(0xFF4A9FE0);
+  static const _bgColor = Color(0xFFEEF3F8);
+  static const _inputBg = Color(0xFFF0F4F8);
+  static const _textDark = Color(0xFF1A2B3C);
+  static const _textGrey = Color(0xFF8A9BB0);
+  static const _cardBg = Colors.white;
 
   @override
   void initState() {
@@ -122,18 +122,17 @@ class _LoginScreenState extends State<LoginScreen>
         _showError('Pilih tanggal lahir anak terlebih dahulu.');
         return;
       }
-      final tgl = '${_tglLahir!.year.toString().padLeft(4, '0')}'
+      final tgl =
+          '${_tglLahir!.year.toString().padLeft(4, '0')}'
           '-${_tglLahir!.month.toString().padLeft(2, '0')}'
           '-${_tglLahir!.day.toString().padLeft(2, '0')}';
       success = await auth.loginOrangTua(
         nikBalita: _nikCtrl.text.trim(),
-        tglLahir:  tgl,
+        tglLahir: tgl,
+        nik: _nikCtrl.text.trim(),
       );
     } else {
-      success = await auth.login(
-        _usernameCtrl.text.trim(),
-        _passwordCtrl.text,
-      );
+      success = await auth.login(_usernameCtrl.text.trim(), _passwordCtrl.text);
     }
 
     if (!mounted) return;
@@ -215,7 +214,11 @@ class _LoginScreenState extends State<LoginScreen>
             ),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Icon(Icons.favorite_rounded, color: Colors.white, size: 20),
+          child: const Icon(
+            Icons.favorite_rounded,
+            color: Colors.white,
+            size: 20,
+          ),
         ),
         const SizedBox(width: 10),
         const Text(
@@ -240,12 +243,12 @@ class _LoginScreenState extends State<LoginScreen>
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1B6FBE).withOpacity(0.08),
+            color: const Color(0xFF1B6FBE).withValues(alpha: 0.08),
             blurRadius: 40,
             offset: const Offset(0, 8),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 2),
           ),
@@ -325,11 +328,7 @@ class _LoginScreenState extends State<LoginScreen>
         const SizedBox(height: 8),
         Text(
           'Silakan masuk untuk mengakses layanan\nkesehatan digital Posyandu Anda.',
-          style: TextStyle(
-            fontSize: 14,
-            color: _textGrey,
-            height: 1.5,
-          ),
+          style: TextStyle(fontSize: 14, color: _textGrey, height: 1.5),
         ),
       ],
     );
@@ -360,7 +359,7 @@ class _LoginScreenState extends State<LoginScreen>
                   boxShadow: isActive
                       ? [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
+                            color: Colors.black.withValues(alpha: 0.08),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -539,15 +538,19 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         child: Row(
           children: [
-            const Icon(Icons.calendar_today_outlined, color: _textGrey, size: 20),
+            const Icon(
+              Icons.calendar_today_outlined,
+              color: _textGrey,
+              size: 20,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 _tglLahir == null
                     ? 'mm/dd/yyyy'
                     : '${_tglLahir!.day.toString().padLeft(2, '0')}/'
-                      '${_tglLahir!.month.toString().padLeft(2, '0')}/'
-                      '${_tglLahir!.year}',
+                          '${_tglLahir!.month.toString().padLeft(2, '0')}/'
+                          '${_tglLahir!.year}',
                 style: TextStyle(
                   fontSize: 15,
                   color: _tglLahir == null ? _textGrey : _textDark,
@@ -557,8 +560,11 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
               ),
             ),
-            const Icon(Icons.keyboard_arrow_down_rounded,
-                color: _textGrey, size: 22),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: _textGrey,
+              size: 22,
+            ),
           ],
         ),
       ),
@@ -568,7 +574,7 @@ class _LoginScreenState extends State<LoginScreen>
   // ── Login Button ──────────────────────────────────────────────────
   Widget _buildLoginButton() {
     return Consumer<AuthProvider>(
-      builder: (_, auth, __) {
+      builder: (_, auth, _) {
         return SizedBox(
           width: double.infinity,
           height: 56,
@@ -587,7 +593,7 @@ class _LoginScreenState extends State<LoginScreen>
                   ? null
                   : [
                       BoxShadow(
-                        color: _primary.withOpacity(0.35),
+                        color: _primary.withValues(alpha: 0.35),
                         blurRadius: 16,
                         offset: const Offset(0, 6),
                       ),
@@ -732,9 +738,7 @@ class _GoogleIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _GoogleIconPainter(),
-    );
+    return CustomPaint(painter: _GoogleIconPainter());
   }
 }
 
@@ -743,7 +747,7 @@ class _GoogleIconPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final cx = size.width / 2;
     final cy = size.height / 2;
-    final r  = size.width / 2;
+    final r = size.width / 2;
 
     // Blue arc (top-right)
     canvas.drawArc(
@@ -795,8 +799,7 @@ class _GoogleIconPainter extends CustomPainter {
 
     // White horizontal bar (G cutout)
     canvas.drawRect(
-      Rect.fromLTWH(cx, cy - size.height * 0.12,
-          r * 0.9, size.height * 0.24),
+      Rect.fromLTWH(cx, cy - size.height * 0.12, r * 0.9, size.height * 0.24),
       Paint()..color = Colors.white,
     );
   }

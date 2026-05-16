@@ -17,25 +17,25 @@ class LoginUseCase {
     required String username,
     required String password,
   }) {
-    return repository.login(
-      username: username,
-      password: password,
-    );
+    return repository.login(username: username, password: password);
   }
 }
 
 // ── Use Case 2: Login Orang Tua ───────────────────────────────────────
 class LoginOrangTuaUseCase {
   final AuthRepository repository;
-  const LoginOrangTuaUseCase(this.repository);
 
-  Future<AuthEntity> call({
+  LoginOrangTuaUseCase(this.repository);
+
+  Future<AuthEntity> execute({
+    required String nik,
     required String nikBalita,
     required String tglLahir,
-  }) {
-    return repository.loginOrangTua(
+  }) async {
+    return await repository.loginOrangTua(
+      nik: nik,
+      tglLahir: tglLahir,
       nikBalita: nikBalita,
-      tglLahir:  tglLahir,
     );
   }
 }
@@ -51,9 +51,9 @@ class LoginGoogleUseCase {
     required int idUser,
   }) {
     return repository.loginGoogle(
-      googleId:    googleId,
+      googleId: googleId,
       emailGoogle: emailGoogle,
-      idUser:      idUser,
+      idUser: idUser,
     );
   }
 }
@@ -101,8 +101,8 @@ class UbahPasswordUseCase {
     required String passwordBaruConfirmation,
   }) {
     return repository.ubahPassword(
-      passwordLama:             passwordLama,
-      passwordBaru:             passwordBaru,
+      passwordLama: passwordLama,
+      passwordBaru: passwordBaru,
       passwordBaruConfirmation: passwordBaruConfirmation,
     );
   }

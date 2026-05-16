@@ -87,7 +87,7 @@ class _AppEntryState extends State<AppEntry> {
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
-      builder: (_, auth, __) {
+      builder: (_, auth, _) {
         return switch (auth.status) {
           AuthStatus.unknown => const _SplashScreen(),
           AuthStatus.unauthenticated => const LoginScreen(),
