@@ -25,4 +25,13 @@ class ApiResponse<T> {
       );
 
   bool get isSuccess => success && data != null;
+
+  /// Helper untuk handle response dengan mudah
+  R when<R>({
+    required R Function(T data) onSuccess,
+    required R Function(String error) onError,
+  }) {
+    if (isSuccess) return onSuccess(data as T);
+    return onError(error ?? 'Terjadi kesalahan.');
+  }
 }

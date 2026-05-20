@@ -49,8 +49,10 @@ class _AuthInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     if (err.response?.statusCode == 401) {
+      // Token expired / invalid — bersihkan storage
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('auth_token');
+      await prefs.remove('auth_role');
       await prefs.remove('auth_user');
     }
     handler.next(err);
@@ -66,9 +68,16 @@ class _LogInterceptor extends Interceptor {
   }
 
   @override
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    // ignore: avoid_print
+    print('[API OK] ${response.statusCode} ${response.requestOptions.path}');
+    handler.next(response);
+  }
+
+  @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     // ignore: avoid_print
-    print('[API ERROR] ${err.response?.statusCode} ${err.message}');
+    print('[API ERR] ${err.response?.statusCode} ${err.message}');
     handler.next(err);
   }
 }

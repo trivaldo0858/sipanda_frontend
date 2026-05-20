@@ -13,7 +13,6 @@ class ApiException implements Exception {
     this.errors,
   });
 
-  /// Parse DioException menjadi ApiException yang lebih ramah
   factory ApiException.fromDio(DioException e) {
     final response = e.response;
 
@@ -25,28 +24,34 @@ class ApiException implements Exception {
     }
 
     final data = response.data;
-    String message = 'Terjadi kesalahan.';
+    String msg = 'Terjadi kesalahan.';
     Map<String, dynamic>? errors;
 
     if (data is Map<String, dynamic>) {
-      message = data['message'] as String? ?? message;
-      errors  = data['errors'] as Map<String, dynamic>?;
+      msg    = data['message'] as String? ?? msg;
+      errors = data['errors'] as Map<String, dynamic>?;
 
       // Gabungkan pesan validasi jika ada
       if (errors != null) {
         final validationMessages = errors.values
             .expand((e) => e is List ? e : [e])
             .join('\n');
-        if (validationMessages.isNotEmpty) message = validationMessages;
+        if (validationMessages.isNotEmpty) msg = validationMessages;
       }
     }
 
     return ApiException(
-      message: message,
+      message: msg,
       statusCode: response.statusCode,
       errors: errors,
     );
   }
+
+  /// Cek apakah error ini karena unauthenticated
+  bool get isUnauthorized => statusCode == 401;
+
+  /// Cek apakah error validasi (422)
+  bool get isValidation => statusCode == 422;
 
   static String _networkErrorMessage(DioExceptionType type) {
     return switch (type) {
