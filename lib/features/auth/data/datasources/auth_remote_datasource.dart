@@ -3,10 +3,7 @@ import '../../../../core/constants/api_constants.dart';
 import '../models/auth_model.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<AuthModel> login({
-    required String username,
-    required String password,
-  });
+  Future<AuthModel> login({required String username, required String password});
 
   Future<AuthModel> loginOrangTua({
     required String nik,
@@ -35,11 +32,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }) async {
     try {
       final response = await dio.post(
-        ApiConstants.login,
-        data: {
-          'username': username,
-          'password': password,
-        },
+        '/login',
+        data: {'username': username, 'password': password},
       );
       return AuthModel.fromJson(response.data);
     } catch (e) {
@@ -58,7 +52,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         '/login-ortu', // Sesuaikan dengan endpoint API Login Orang Tua di Laravel kamu
         data: {
           'nik': nik,
-          'password': tanggalLahir, // Di backend biasanya password default ortu adalah tgl_lahir
+          'password':
+              tanggalLahir, // Di backend biasanya password default ortu adalah tgl_lahir
         },
       );
       return AuthModel.fromJson(response.data);
@@ -94,10 +89,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       await dio.post(
         '/ubah-password',
-        data: {
-          'password_lama': passwordLama,
-          'password_baru': passwordBaru,
-        },
+        data: {'password_lama': passwordLama, 'password_baru': passwordBaru},
       );
     } catch (e) {
       rethrow;

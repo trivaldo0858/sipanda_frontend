@@ -17,11 +17,14 @@ class ImunisasiService {
     int page = 1,
   }) async {
     try {
-      final res = await _dio.get(ApiConstants.imunisasi, queryParameters: {
-        'page':      page,
-        'nik_anak':  nikAnak,
-        'id_vaksin': idVaksin,
-      }..removeWhere((_, v) => v == null));
+      final res = await _dio.get(
+        ApiConstants.imunisasi,
+        queryParameters: {
+          'page': page,
+          'nik_anak': nikAnak,
+          'id_vaksin': idVaksin,
+        }..removeWhere((_, v) => v == null),
+      );
 
       return ApiResponse.success(
         PaginatedResponse.fromJson(res.data['data'], ImunisasiModel.fromJson),
@@ -42,7 +45,10 @@ class ImunisasiService {
 
   Future<ApiResponse<ImunisasiModel>> create(ImunisasiModel imunisasi) async {
     try {
-      final res = await _dio.post(ApiConstants.imunisasi, data: imunisasi.toJson());
+      final res = await _dio.post(
+        ApiConstants.imunisasi,
+        data: imunisasi.toJson(),
+      );
       return ApiResponse.success(
         ImunisasiModel.fromJson(res.data['data']),
         message: res.data['message'],
@@ -52,7 +58,10 @@ class ImunisasiService {
     }
   }
 
-  Future<ApiResponse<ImunisasiModel>> update(int id, Map<String, dynamic> data) async {
+  Future<ApiResponse<ImunisasiModel>> update(
+    int id,
+    Map<String, dynamic> data,
+  ) async {
     try {
       final res = await _dio.put(ApiConstants.imunisasiDetail(id), data: data);
       return ApiResponse.success(
@@ -80,7 +89,7 @@ class JenisVaksinService {
 
   Future<ApiResponse<List<JenisVaksinModel>>> getAll() async {
     try {
-      final res = await _dio.get(ApiConstants.vaksin);
+      final res = await _dio.get('/vaksin');
       final list = (res.data['data'] as List)
           .map((e) => JenisVaksinModel.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -92,7 +101,7 @@ class JenisVaksinService {
 
   Future<ApiResponse<JenisVaksinModel>> create(JenisVaksinModel v) async {
     try {
-      final res = await _dio.post(ApiConstants.vaksin, data: v.toJson());
+      final res = await _dio.post('/vaksin', data: v.toJson());
       return ApiResponse.success(
         JenisVaksinModel.fromJson(res.data['data']),
         message: res.data['message'],
@@ -104,7 +113,7 @@ class JenisVaksinService {
 
   Future<ApiResponse<bool>> delete(int id) async {
     try {
-      final res = await _dio.delete(ApiConstants.vaksinDetail(id));
+      final res = await _dio.delete('/vaksin/$id');
       return ApiResponse.success(true, message: res.data['message']);
     } on DioException catch (e) {
       return ApiResponse.error(ApiException.fromDio(e).message);

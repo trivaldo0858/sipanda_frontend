@@ -19,18 +19,18 @@ class PenggunaService {
     int page = 1,
   }) async {
     try {
-      final res = await _dio.get(ApiConstants.pengguna, queryParameters: {
-        'page':         page,
-        'role':         role,
-        'search':       search,
-        'id_posyandu':  idPosyandu,
-      }..removeWhere((_, v) => v == null));
+      final res = await _dio.get(
+        '/pengguna',
+        queryParameters: {
+          'page': page,
+          'role': role,
+          'search': search,
+          'id_posyandu': idPosyandu,
+        }..removeWhere((_, v) => v == null),
+      );
 
       return ApiResponse.success(
-        PaginatedResponse.fromJson(
-          res.data['data'],
-          PenggunaModel.fromJson,
-        ),
+        PaginatedResponse.fromJson(res.data['data'], PenggunaModel.fromJson),
       );
     } on DioException catch (e) {
       return ApiResponse.error(ApiException.fromDio(e).message);
@@ -40,20 +40,17 @@ class PenggunaService {
   // ── Detail pengguna ───────────────────────────────────────────────
   Future<ApiResponse<PenggunaModel>> getById(int id) async {
     try {
-      final res = await _dio.get(ApiConstants.penggunaDetail(id));
-      return ApiResponse.success(
-        PenggunaModel.fromJson(res.data['data']),
-      );
+      final res = await _dio.get('/pengguna/$id');
+      return ApiResponse.success(PenggunaModel.fromJson(res.data['data']));
     } on DioException catch (e) {
       return ApiResponse.error(ApiException.fromDio(e).message);
     }
   }
 
   // ── Tambah pengguna ───────────────────────────────────────────────
-  Future<ApiResponse<PenggunaModel>> create(
-      Map<String, dynamic> data) async {
+  Future<ApiResponse<PenggunaModel>> create(Map<String, dynamic> data) async {
     try {
-      final res = await _dio.post(ApiConstants.pengguna, data: data);
+      final res = await _dio.post('/pengguna', data: data);
       return ApiResponse.success(
         PenggunaModel.fromJson(res.data['data']),
         message: res.data['message'],
@@ -69,10 +66,7 @@ class PenggunaService {
     Map<String, dynamic> data,
   ) async {
     try {
-      final res = await _dio.put(
-        ApiConstants.penggunaDetail(id),
-        data: data,
-      );
+      final res = await _dio.put('/pengguna/$id', data: data);
       return ApiResponse.success(
         PenggunaModel.fromJson(res.data['data']),
         message: res.data['message'],
@@ -85,7 +79,7 @@ class PenggunaService {
   // ── Hapus pengguna ────────────────────────────────────────────────
   Future<ApiResponse<bool>> delete(int id) async {
     try {
-      final res = await _dio.delete(ApiConstants.penggunaDetail(id));
+      final res = await _dio.delete('/pengguna/$id');
       return ApiResponse.success(true, message: res.data['message']);
     } on DioException catch (e) {
       return ApiResponse.error(ApiException.fromDio(e).message);

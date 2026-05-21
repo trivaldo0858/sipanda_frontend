@@ -19,10 +19,10 @@ class AuthService {
     required String password,
   }) async {
     try {
-      final res = await _dio.post(ApiConstants.login, data: {
-        'username': username,
-        'password': password,
-      });
+      final res = await _dio.post(
+        '/login',
+        data: {'username': username, 'password': password},
+      );
       final authResponse = AuthResponse.fromJson(res.data['data']);
       await _simpanSession(authResponse);
       return ApiResponse.success(authResponse, message: res.data['message']);
@@ -37,10 +37,10 @@ class AuthService {
     required String tglLahir, // format: 'yyyy-MM-dd'
   }) async {
     try {
-      final res = await _dio.post(ApiConstants.loginOrangTua, data: {
-        'nik_balita': nikBalita,
-        'tgl_lahir':  tglLahir,
-      });
+      final res = await _dio.post(
+        ApiConstants.loginOrangTua,
+        data: {'nik_balita': nikBalita, 'tgl_lahir': tglLahir},
+      );
 
       final authResponse = AuthResponse.fromJson(res.data['data']);
       await _simpanSession(authResponse);
@@ -65,11 +65,15 @@ class AuthService {
     required int idUser,
   }) async {
     try {
-      final res = await _dio.post(ApiConstants.loginGoogle, data: {
-        'google_id':    googleId,
-        'email_google': emailGoogle,
-        'id_user':      idUser,
-      });
+      final res = await _dio.post(
+        // Use explicit endpoint string because ApiConstants.loginGoogle is not defined
+        '/login-google',
+        data: {
+          'google_id': googleId,
+          'email_google': emailGoogle,
+          'id_user': idUser,
+        },
+      );
       final authResponse = AuthResponse.fromJson(res.data['data']);
       await _simpanSession(authResponse);
       return ApiResponse.success(authResponse, message: res.data['message']);
@@ -107,11 +111,14 @@ class AuthService {
     required String passwordBaruConfirmation,
   }) async {
     try {
-      final res = await _dio.post(ApiConstants.ubahPassword, data: {
-        'password_lama':              passwordLama,
-        'password_baru':              passwordBaru,
-        'password_baru_confirmation': passwordBaruConfirmation,
-      });
+      final res = await _dio.post(
+        ApiConstants.ubahPassword,
+        data: {
+          'password_lama': passwordLama,
+          'password_baru': passwordBaru,
+          'password_baru_confirmation': passwordBaruConfirmation,
+        },
+      );
       return ApiResponse.success(true, message: res.data['message']);
     } on DioException catch (e) {
       return ApiResponse.error(ApiException.fromDio(e).message);
@@ -122,11 +129,14 @@ class AuthService {
   Future<void> _simpanSession(AuthResponse authResponse) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('auth_token', authResponse.token);
-    await prefs.setString('auth_user', jsonEncode({
-      'id_user':  authResponse.pengguna.idUser,
-      'username': authResponse.pengguna.username,
-      'role':     authResponse.pengguna.role,
-    }));
+    await prefs.setString(
+      'auth_user',
+      jsonEncode({
+        'id_user': authResponse.pengguna.idUser,
+        'username': authResponse.pengguna.username,
+        'role': authResponse.pengguna.role,
+      }),
+    );
   }
 
   Future<void> _hapusSession() async {

@@ -51,9 +51,7 @@ class SipandaApp extends StatelessWidget {
         title: 'SIPANDA',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF2E86AB),
-          ),
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2E86AB)),
           useMaterial3: true,
         ),
         home: const AppEntry(),
@@ -81,15 +79,11 @@ class _AppEntryState extends State<AppEntry> {
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
-<<<<<<< Updated upstream
-      builder: (_, auth, _) {
-=======
       builder: (context, auth, _) {
->>>>>>> Stashed changes
         return switch (auth.status) {
-          AuthStatus.unknown         => const _SplashScreen(),
+          AuthStatus.unknown => const _SplashScreen(),
           AuthStatus.unauthenticated => const _LoginScreen(),
-          AuthStatus.authenticated   => _HomeRouter(auth: auth),
+          AuthStatus.authenticated => _HomeRouter(auth: auth),
         };
       },
     );
@@ -104,10 +98,10 @@ class _HomeRouter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (auth.pengguna?.role) {
-      'Bidan'    => const _BidanHome(),
-      'Kader'    => const _KaderHome(),
+      'Bidan' => const _BidanHome(),
+      'Kader' => const _KaderHome(),
       'OrangTua' => const _OrangTuaHome(),
-      _          => const _LoginScreen(),
+      _ => const _LoginScreen(),
     };
   }
 }
@@ -116,9 +110,8 @@ class _HomeRouter extends StatelessWidget {
 class _SplashScreen extends StatelessWidget {
   const _SplashScreen();
   @override
-  Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: CircularProgressIndicator()),
-  );
+  Widget build(BuildContext context) =>
+      const Scaffold(body: Center(child: CircularProgressIndicator()));
 }
 
 class _LoginScreen extends StatelessWidget {
