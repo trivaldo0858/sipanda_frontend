@@ -6,8 +6,7 @@ class ApiConstants {
   // Emulator Android  : http://10.0.2.2:8000
   // Device fisik      : http://192.168.x.x:8000
   // Production        : https://yourdomain.com
-  static const String baseUrl = 'https://sipanda.cicd.my.id/api/v1';
-  
+static const String baseUrl = 'http://10.0.167.29:8000/api/v1';  
   // ── Auth ──────────────────────────────────────────
   static const String loginKader    = '/auth/login/kader';
   static const String loginBidan    = '/auth/login/bidan';

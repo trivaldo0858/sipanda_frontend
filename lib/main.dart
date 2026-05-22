@@ -3,25 +3,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/network/api_client.dart';
-import 'features/auth/auth_injection.dart';
-import 'features/auth/presentation/providers/auth_provider.dart';
-import 'features/auth/presentation/providers/anak_provider.dart';
-import 'features/auth/presentation/providers/dashboard_provider.dart';
-import 'features/auth/presentation/providers/imunisasi_provider.dart';
-import 'features/auth/presentation/providers/jadwal_provider.dart';
-import 'features/auth/presentation/providers/laporan_provider.dart';
-import 'features/auth/presentation/providers/notifikasi_provider.dart';
-import 'features/auth/presentation/providers/pemeriksaan_provider.dart';
-import 'features/auth/presentation/providers/pengguna_provider.dart';
-import 'features/auth/presentation/providers/posyandu_provider.dart';
-import 'features/auth/presentation/providers/validasi_provider.dart';
-import 'features/auth/presentation/screens/login_screen.dart';
-// Import baru
-import 'features/auth/presentation/screens/dashboard_kader_screen.dart';
+import 'router/app_router.dart';
 
-void main() {
+// ── Import semua Provider per fitur ───────────────────────
+import 'features/auth/providers/auth_provider.dart';
+import 'features/dashboard/providers/dashboard_provider.dart';
+import 'features/anak/providers/anak_provider.dart';
+import 'features/pemeriksaan/providers/pemeriksaan_provider.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inisialisasi API Client (Dio)
   ApiClient.instance.init();
+
   runApp(const SipandaApp());
 }
 
@@ -32,144 +27,175 @@ class SipandaApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // Auth — Clean Architecture
-        ...authProviders(),
-
-        // Data providers
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
         ChangeNotifierProvider(create: (_) => AnakProvider()),
         ChangeNotifierProvider(create: (_) => PemeriksaanProvider()),
-        ChangeNotifierProvider(create: (_) => ImunisasiProvider()),
-        ChangeNotifierProvider(create: (_) => JadwalProvider()),
-        ChangeNotifierProvider(create: (_) => NotifikasiProvider()),
-        ChangeNotifierProvider(create: (_) => LaporanProvider()),
-        ChangeNotifierProvider(create: (_) => PosyanduProvider()),
-        ChangeNotifierProvider(create: (_) => ValidasiProvider()),
-        ChangeNotifierProvider(create: (_) => PenggunaProvider()),
       ],
-      child: MaterialApp(
-        title: 'SIPANDA',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2E86AB)),
-          useMaterial3: true,
-        ),
-        home: const AppEntry(),
+      child: Builder(
+        builder: (context) {
+          final router = AppRouter.createRouter(context);
+          return MaterialApp.router(
+            title: 'SIPANDA',
+            debugShowCheckedModeBanner: false,
+            theme: _buildTheme(),
+            routerConfig: router,
+          );
+        },
       ),
     );
   }
-}
 
-class AppEntry extends StatefulWidget {
-  const AppEntry({super.key});
+  ThemeData _buildTheme() {
+    const Color primary     = Color(0xFF0D6EFD);
+    const Color background  = Color(0xFFF7F9FC);
+    const Color cardWhite   = Color(0xFFFFFFFF);
+    const Color textDark    = Color(0xFF1E293B);
+    const Color textGrey    = Color(0xFF64748B);
+    const Color border      = Color(0xFFE2E8F0);
+    const Color borderLight = Color(0xFFF1F5F9);
+    const Color danger      = Color(0xFFDC3545);
 
-  @override
-  State<AppEntry> createState() => _AppEntryState();
-}
-
-class _AppEntryState extends State<AppEntry> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AuthProvider>().checkSession();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<AuthProvider>(
-      builder: (context, auth, _) {
-        return switch (auth.status) {
-          AuthStatus.unknown => const _SplashScreen(),
-          AuthStatus.unauthenticated => const _LoginScreen(),
-          AuthStatus.authenticated => _HomeRouter(auth: auth),
-        };
-      },
-    );
-  }
-}
-
-// ── Router per Role ───────────────────────────────────────────────────
-class _HomeRouter extends StatelessWidget {
-  final AuthProvider auth;
-  const _HomeRouter({required this.auth});
-
-  @override
-  Widget build(BuildContext context) {
-    return switch (auth.pengguna?.role) {
-      'Bidan' => const _BidanHome(),
-      'Kader' => const _KaderHome(),
-      'OrangTua' => const _OrangTuaHome(),
-      _ => const _LoginScreen(),
-    };
-  }
-}
-
-// ── Placeholder Screens ───────────────────────────────────────────────
-class _SplashScreen extends StatelessWidget {
-  const _SplashScreen();
-  @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: CircularProgressIndicator()));
-}
-
-class _LoginScreen extends StatelessWidget {
-  const _LoginScreen();
-  @override
-  Widget build(BuildContext context) => const LoginScreen();
-}
-
-class _BidanHome extends StatelessWidget {
-  const _BidanHome();
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Dashboard Bidan')),
-    body: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Halo Bidan, '
-            '${context.watch<AuthProvider>().pengguna?.username}!',
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => context.read<AuthProvider>().logout(),
-            child: const Text('Logout'),
-          ),
-        ],
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primary,
+        primary: primary,
+        surface: cardWhite,
       ),
-    ),
-  );
-}
+      scaffoldBackgroundColor: background,
 
-// Update _KaderHome sesuai permintaan
-class _KaderHome extends StatelessWidget {
-  const _KaderHome();
-  @override
-  Widget build(BuildContext context) => const DashboardKaderScreen();
-}
-
-class _OrangTuaHome extends StatelessWidget {
-  const _OrangTuaHome();
-  @override
-  Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
-    return Scaffold(
-      appBar: AppBar(title: const Text('Beranda')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Halo, ${auth.pengguna?.username ?? '-'}!'),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => context.read<AuthProvider>().logout(),
-              child: const Text('Logout'),
-            ),
-          ],
+      // ── AppBar ──────────────────────────────────
+      appBarTheme: const AppBarTheme(
+        backgroundColor: cardWhite,
+        foregroundColor: textDark,
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: textDark,
         ),
+        iconTheme: IconThemeData(color: textDark),
+      ),
+
+      // ── Card ────────────────────────────────────
+      cardTheme: CardThemeData(
+        color: cardWhite,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: border),
+        ),
+        margin: EdgeInsets.zero,
+      ),
+
+      // ── ElevatedButton ──────────────────────────
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primary,
+          foregroundColor: cardWhite,
+          elevation: 0,
+          minimumSize: const Size(double.infinity, 52),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          textStyle: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+
+      // ── OutlinedButton ──────────────────────────
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: primary,
+          side: const BorderSide(color: primary),
+          minimumSize: const Size(double.infinity, 52),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          textStyle: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+
+      // ── InputDecoration ─────────────────────────
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: borderLight,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: primary, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: danger),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: danger, width: 1.5),
+        ),
+        hintStyle: const TextStyle(
+          fontSize: 14,
+          color: Color(0xFFCBD5E1),
+        ),
+        labelStyle: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: textGrey,
+        ),
+        errorStyle: const TextStyle(
+          fontSize: 12,
+          color: danger,
+        ),
+      ),
+
+      // ── BottomNavigationBar ─────────────────────
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: cardWhite,
+        selectedItemColor: primary,
+        unselectedItemColor: textGrey,
+        elevation: 8,
+        type: BottomNavigationBarType.fixed,
+        selectedLabelStyle: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: TextStyle(fontSize: 11),
+      ),
+
+      // ── Divider ─────────────────────────────────
+      dividerTheme: const DividerThemeData(
+        color: border,
+        thickness: 1,
+        space: 0,
+      ),
+
+      // ── SnackBar ────────────────────────────────
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: textDark,
+        contentTextStyle: const TextStyle(
+          fontSize: 14,
+          color: cardWhite,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
