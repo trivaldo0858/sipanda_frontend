@@ -4,16 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/network/api_client.dart';
 import 'router/app_router.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 // ── Import semua Provider per fitur ───────────────────────
 import 'features/auth/providers/auth_provider.dart';
 import 'features/dashboard/providers/dashboard_provider.dart';
 import 'features/anak/providers/anak_provider.dart';
 import 'features/pemeriksaan/providers/pemeriksaan_provider.dart';
+import 'features/imunisasi/providers/imunisasi_provider.dart';
+import 'features/jadwal/providers/jadwal_provider.dart';
+import 'features/notifikasi/providers/notifikasi_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+    await initializeDateFormatting('id_ID', null); // ← wajib ada
   // Inisialisasi API Client (Dio)
   ApiClient.instance.init();
 
@@ -31,6 +35,9 @@ class SipandaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
         ChangeNotifierProvider(create: (_) => AnakProvider()),
         ChangeNotifierProvider(create: (_) => PemeriksaanProvider()),
+        ChangeNotifierProvider(create: (_) => ImunisasiProvider()),
+        ChangeNotifierProvider(create: (_) => JadwalProvider()),
+        ChangeNotifierProvider(create: (_) => NotifikasiProvider()),
       ],
       child: Builder(
         builder: (context) {

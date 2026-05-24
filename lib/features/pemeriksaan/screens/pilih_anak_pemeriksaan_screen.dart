@@ -1,24 +1,25 @@
-// lib/features/pemeriksaan/screens/catat_pemeriksaan_screen.dart
+// lib/features/pemeriksaan/screens/pilih_anak_pemeriksaan_screen.dart
+// Screen ini KHUSUS untuk memilih balita sebelum catat pemeriksaan
+// Tidak ada tombol Detail/Edit/Hapus
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import '../providers/pemeriksaan_provider.dart';
 import '../../anak/providers/anak_provider.dart';
 import '../../anak/models/anak_model.dart';
 
-class CatatPemeriksaanScreen extends StatefulWidget {
-  final String nikAnak;
-  const CatatPemeriksaanScreen({super.key, required this.nikAnak});
+class PilihAnakPemeriksaanScreen extends StatefulWidget {
+  const PilihAnakPemeriksaanScreen({super.key});
 
   @override
-  State<CatatPemeriksaanScreen> createState() =>
-      _CatatPemeriksaanScreenState();
+  State<PilihAnakPemeriksaanScreen> createState() =>
+      _PilihAnakPemeriksaanScreenState();
 }
 
-class _CatatPemeriksaanScreenState
-    extends State<CatatPemeriksaanScreen> {
+class _PilihAnakPemeriksaanScreenState
+    extends State<PilihAnakPemeriksaanScreen> {
+  final _searchCtrl = TextEditingController();
 
   static const Color _primary    = Color(0xFF0D6EFD);
   static const Color _textDark   = Color(0xFF1E293B);
@@ -35,7 +36,18 @@ class _CatatPemeriksaanScreenState
     });
   }
 
-  // ── Tampilkan bottom sheet input pemeriksaan ──────────
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  void _onSearch(String value) {
+    context.read<AnakProvider>().loadAnakList(
+          search: value.isEmpty ? null : value,
+        );
+  }
+
   void _showInputPemeriksaan(AnakModel anak) {
     showModalBottomSheet(
       context: context,
@@ -58,7 +70,7 @@ class _CatatPemeriksaanScreenState
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // Header + Search
           Container(
             color: _cardWhite,
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
@@ -75,15 +87,38 @@ class _CatatPemeriksaanScreenState
                 ),
                 const SizedBox(height: 4),
                 const Text(
-                  'Pilih balita yang akan dicatat\nhasil pemeriksaannya.',
+                  'Tap balita untuk mencatat\nhasil pemeriksaan.',
                   style: TextStyle(
                       fontSize: 13, color: _textGrey, height: 1.4),
+                ),
+                const SizedBox(height: 14),
+                // Search bar
+                Container(
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: TextField(
+                    controller: _searchCtrl,
+                    onChanged: _onSearch,
+                    decoration: const InputDecoration(
+                      hintText: 'Cari nama atau NIK...',
+                      hintStyle: TextStyle(
+                          fontSize: 14, color: Color(0xFFCBD5E1)),
+                      prefixIcon: Icon(Icons.search_rounded,
+                          color: Color(0xFF94A3B8), size: 20),
+                      border: InputBorder.none,
+                      contentPadding:
+                          EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
 
-          // List balita
+          // List balita — HANYA untuk dipilih, tidak ada aksi lain
           Expanded(
             child: Consumer<AnakProvider>(
               builder: (context, provider, _) {
@@ -101,8 +136,10 @@ class _CatatPemeriksaanScreenState
                         const Icon(Icons.wifi_off_rounded,
                             size: 48, color: Color(0xFF94A3B8)),
                         const SizedBox(height: 12),
-                        Text(provider.errorMessage ?? 'Gagal memuat',
-                            style: const TextStyle(color: _textGrey)),
+                        Text(
+                            provider.errorMessage ?? 'Gagal memuat',
+                            style:
+                                const TextStyle(color: _textGrey)),
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () => provider.loadAnakList(),
@@ -136,9 +173,10 @@ class _CatatPemeriksaanScreenState
                                 color: _textDark)),
                         const SizedBox(height: 8),
                         const Text(
-                            'Tambah balita terlebih dahulu\ndi menu Data Balita.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: _textGrey)),
+                          'Tambah balita terlebih dahulu\ndi menu Data Balita.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: _textGrey),
+                        ),
                       ],
                     ),
                   );
@@ -154,7 +192,7 @@ class _CatatPemeriksaanScreenState
                         const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       final anak = provider.anakList[index];
-                      return _buildAnakItem(anak);
+                      return _buildAnakTile(anak);
                     },
                   ),
                 );
@@ -166,7 +204,8 @@ class _CatatPemeriksaanScreenState
     );
   }
 
-  Widget _buildAnakItem(AnakModel anak) {
+  // Card sederhana — TAP untuk pilih, tidak ada Detail/Edit/Hapus
+  Widget _buildAnakTile(AnakModel anak) {
     return GestureDetector(
       onTap: () => _showInputPemeriksaan(anak),
       child: Container(
@@ -178,7 +217,6 @@ class _CatatPemeriksaanScreenState
         ),
         child: Row(
           children: [
-            // Avatar
             Container(
               width: 48,
               height: 48,
@@ -199,8 +237,6 @@ class _CatatPemeriksaanScreenState
               ),
             ),
             const SizedBox(width: 14),
-
-            // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,8 +260,6 @@ class _CatatPemeriksaanScreenState
                 ],
               ),
             ),
-
-            // Arrow
             Container(
               width: 36,
               height: 36,
@@ -255,9 +289,9 @@ class _PemeriksaanBottomSheet extends StatefulWidget {
 
 class _PemeriksaanBottomSheetState
     extends State<_PemeriksaanBottomSheet> {
-  final _formKey    = GlobalKey<FormState>();
-  final _beratCtrl  = TextEditingController();
-  final _tinggiCtrl = TextEditingController();
+  final _formKey     = GlobalKey<FormState>();
+  final _beratCtrl   = TextEditingController();
+  final _tinggiCtrl  = TextEditingController();
   final _lingkarCtrl = TextEditingController();
 
   static const Color _primary  = Color(0xFF0D6EFD);
@@ -298,8 +332,9 @@ class _PemeriksaanBottomSheetState
           content: Text(success
               ? 'Pemeriksaan ${widget.anak.namaAnak} berhasil disimpan!'
               : provider.errorMessage ?? 'Gagal menyimpan.'),
-          backgroundColor:
-              success ? const Color(0xFF198754) : const Color(0xFFDC3545),
+          backgroundColor: success
+              ? const Color(0xFF198754)
+              : const Color(0xFFDC3545),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10)),
@@ -332,7 +367,7 @@ class _PemeriksaanBottomSheetState
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Handle
+                  // Handle bar
                   Container(
                     width: 40,
                     height: 4,
@@ -365,15 +400,13 @@ class _PemeriksaanBottomSheetState
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
+                  const Text(
                     'Lengkapi data pertumbuhan rutin Balita',
-                    style: TextStyle(
-                        fontSize: 13,
-                        color: _textGrey.withAlpha(180)),
+                    style: TextStyle(fontSize: 13, color: _textGrey),
                   ),
-
-                  // Nama anak
                   const SizedBox(height: 12),
+
+                  // Badge nama anak
                   Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 8),
@@ -400,7 +433,7 @@ class _PemeriksaanBottomSheetState
                   ),
                   const SizedBox(height: 24),
 
-                  // ── Berat Badan ──────────────────────
+                  // Fields
                   _buildField(
                     label: 'BERAT BADAN (KG)',
                     controller: _beratCtrl,
@@ -414,8 +447,6 @@ class _PemeriksaanBottomSheetState
                     },
                   ),
                   const SizedBox(height: 14),
-
-                  // ── Tinggi Badan ─────────────────────
                   _buildField(
                     label: 'TINGGI BADAN (CM)',
                     controller: _tinggiCtrl,
@@ -429,8 +460,6 @@ class _PemeriksaanBottomSheetState
                     },
                   ),
                   const SizedBox(height: 14),
-
-                  // ── Lingkar Kepala ───────────────────
                   _buildField(
                     label: 'LINGKAR KEPALA (CM)',
                     controller: _lingkarCtrl,
@@ -445,18 +474,16 @@ class _PemeriksaanBottomSheetState
                   ),
                   const SizedBox(height: 28),
 
-                  // ── Tombol Simpan ────────────────────
+                  // Tombol Simpan
                   SizedBox(
                     width: double.infinity,
                     height: 54,
                     child: ElevatedButton.icon(
-                      onPressed:
-                          provider.isSaving ? null : _submit,
+                      onPressed: provider.isSaving ? null : _submit,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _primary,
                         shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(16)),
+                            borderRadius: BorderRadius.circular(16)),
                       ),
                       icon: provider.isSaving
                           ? const SizedBox(
@@ -468,9 +495,7 @@ class _PemeriksaanBottomSheetState
                           : const Icon(Icons.save_outlined,
                               color: Colors.white, size: 20),
                       label: Text(
-                        provider.isSaving
-                            ? 'Menyimpan...'
-                            : 'Simpan Data',
+                        provider.isSaving ? 'Menyimpan...' : 'Simpan Data',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -480,8 +505,6 @@ class _PemeriksaanBottomSheetState
                     ),
                   ),
                   const SizedBox(height: 10),
-
-                  // ── Tombol Batal ─────────────────────
                   TextButton(
                     onPressed: () => Navigator.pop(context),
                     child: const Text('Batal',
@@ -507,15 +530,13 @@ class _PemeriksaanBottomSheetState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: _textGrey,
-            letterSpacing: 1,
-          ),
-        ),
+        Text(label,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: _textGrey,
+              letterSpacing: 1,
+            )),
         const SizedBox(height: 6),
         TextFormField(
           controller: controller,

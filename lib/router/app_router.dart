@@ -13,7 +13,11 @@ import '../features/anak/screens/data_anak_screen.dart';
 import '../features/anak/screens/form_tambah_anak_screen.dart';
 import '../features/anak/screens/detail_anak_screen.dart';
 import '../features/anak/models/anak_model.dart';
-import '../features/pemeriksaan/screens/catat_pemeriksaan_screen.dart';
+import '../features/pemeriksaan/screens/pilih_anak_pemeriksaan_screen.dart';
+import '../features/imunisasi/screens/catat_imunisasi_screen.dart';
+import '../features/jadwal/screens/jadwal_screen.dart';
+import '../features/notifikasi/screens/notifikasi_screen.dart';
+import '../features/kms/screens/kms_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -44,14 +48,11 @@ class AppRouter {
       },
 
       routes: [
-        // ── AUTH ──────────────────────────────────────
         GoRoute(
           path: '/login',
           name: 'login',
           builder: (context, state) => const LoginScreen(),
         ),
-
-        // ── DASHBOARD ─────────────────────────────────
         GoRoute(
           path: '/dashboard/kader',
           name: 'dashboard-kader',
@@ -67,8 +68,6 @@ class AppRouter {
           name: 'dashboard-ortu',
           builder: (context, state) => const DashboardOrtuScreen(),
         ),
-
-        // ── ANAK ──────────────────────────────────────
         GoRoute(
           path: '/anak',
           name: 'anak',
@@ -90,49 +89,46 @@ class AppRouter {
             return DetailAnakScreen(nikAnak: nik);
           },
         ),
-
-        // ── PEMERIKSAAN ───────────────────────────────
         GoRoute(
           path: '/pemeriksaan/catat',
           name: 'pemeriksaan-catat',
-          builder: (context, state) {
-            final nikAnak =
-                state.uri.queryParameters['nik_anak'] ?? '';
-            return CatatPemeriksaanScreen(nikAnak: nikAnak);
-          },
+          builder: (context, state) =>
+              const PilihAnakPemeriksaanScreen(),
         ),
-
-        // ── PLACEHOLDER ───────────────────────────────
         GoRoute(
           path: '/imunisasi/catat',
           name: 'imunisasi-catat',
-          builder: (context, state) =>
-              const _PlaceholderScreen(title: 'Catat Imunisasi'),
+          builder: (context, state) {
+            final nikAnak =
+                state.uri.queryParameters['nik_anak'] ?? '';
+            return CatatImunisasiScreen(nikAnak: nikAnak);
+          },
         ),
         GoRoute(
           path: '/jadwal',
           name: 'jadwal',
-          builder: (context, state) =>
-              const _PlaceholderScreen(title: 'Jadwal'),
+          builder: (context, state) => const JadwalScreen(),
         ),
         GoRoute(
           path: '/notifikasi',
           name: 'notifikasi',
-          builder: (context, state) =>
-              const _PlaceholderScreen(title: 'Notifikasi'),
+          builder: (context, state) => const NotifikasiScreen(),
         ),
+        GoRoute(
+          path: '/kms/:nik',
+          name: 'kms',
+          builder: (context, state) {
+            final nik = state.pathParameters['nik']!;
+            return KmsScreen(nikAnak: nik);
+          },
+        ),
+
+        // ── Placeholder ───────────────────────────────
         GoRoute(
           path: '/laporan',
           name: 'laporan',
           builder: (context, state) =>
               const _PlaceholderScreen(title: 'Laporan'),
-        ),
-        GoRoute(
-          path: '/kms/:nik',
-          name: 'kms',
-          builder: (context, state) => _PlaceholderScreen(
-            title: 'KMS ${state.pathParameters['nik']}',
-          ),
         ),
         GoRoute(
           path: '/profil',
@@ -185,7 +181,7 @@ class _PlaceholderScreen extends StatelessWidget {
                 style: const TextStyle(
                     fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
-            const Text('Sedang dalam pengembangan',
+            const Text('Segera hadir',
                 style: TextStyle(color: Color(0xFF64748B))),
           ],
         ),

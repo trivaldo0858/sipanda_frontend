@@ -159,6 +159,7 @@ class InfoAnak {
   final int umurBulan;
   final double? beratTerakhir;
   final double? tinggiTerakhir;
+  final double? lingkarTerakhir;
 
   InfoAnak({
     required this.nikAnak,
@@ -168,6 +169,8 @@ class InfoAnak {
     required this.umurBulan,
     this.beratTerakhir,
     this.tinggiTerakhir,
+    this.lingkarTerakhir,
+
   });
 
   factory InfoAnak.fromJson(Map<String, dynamic> json) => InfoAnak(
@@ -177,7 +180,8 @@ class InfoAnak {
         jenisKelamin: json['jenis_kelamin'] as String,
         umurBulan: json['umur_bulan'] as int? ?? 0,
         beratTerakhir: (json['berat_terakhir'] as num?)?.toDouble(),
-        tinggiTerakhir: (json['tinggi_terakhir'] as num?)?.toDouble(),
+        tinggiTerakhir: (json["tinggi_terakhir"] as num?)?.toDouble(),
+        lingkarTerakhir:(json["lingkar_terakhir"] as num?)?.toDouble(),
       );
 
   String get umurFormat {

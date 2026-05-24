@@ -1,5 +1,6 @@
 // lib/features/dashboard/screens/dashboard_kader_screen.dart
 
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,8 @@ import 'package:intl/intl.dart';
 import '../providers/dashboard_provider.dart';
 import '../models/dashboard_model.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../anak/screens/data_anak_screen.dart';
+import '../../jadwal/screens/jadwal_screen.dart';
 
 class DashboardKaderScreen extends StatefulWidget {
   const DashboardKaderScreen({super.key});
@@ -208,42 +211,41 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
                 ),
               ),
               // Notifikasi
-              // Notifikasi
               IconButton(
                 onPressed: () => context.push('/notifikasi'),
                 icon: const Icon(Icons.notifications_outlined,
                     color: _textDark, size: 24),
               ),
-              // Logout
-              IconButton(
-                onPressed: () async {
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      title: const Text('Konfirmasi Logout'),
-                      content: const Text('Yakin ingin keluar?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text('Batal'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text('Keluar',
-                              style: TextStyle(color: Color(0xFFDC3545))),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (confirm == true && mounted) {
-                    await context.read<AuthProvider>().logout();
-                    if (mounted) context.go('/login');
-                  }
-                },
-                icon: const Icon(Icons.logout_rounded,
-                    color: Color(0xFFDC3545), size: 24),
-                tooltip: 'Logout',
-              ),
+              // Tambah setelah IconButton notifikasi
+IconButton(
+  onPressed: () async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Konfirmasi Logout'),
+        content: const Text('Yakin ingin keluar?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Keluar',
+                style: TextStyle(color: Color(0xFFDC3545))),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true && mounted) {
+      await context.read<AuthProvider>().logout();
+      if (mounted) context.go('/login');
+    }
+  },
+  icon: const Icon(Icons.logout_rounded,
+      color: Color(0xFFDC3545), size: 24),
+  tooltip: 'Logout',
+),
             ],
           ),
         );
@@ -375,7 +377,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
       _MenuData(
           icon: Icons.monitor_heart_outlined,
           label: 'Catat\nPemeriksaan',
-          onTap: () => context.push('/anak')),
+          onTap: () => context.push('/pemeriksaan/catat')),
       _MenuData(
           icon: Icons.calendar_month_outlined,
           label: 'Kelola\nJadwal',
@@ -557,37 +559,13 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
 
   // ── DATA ANAK TAB ─────────────────────────────────────
   Widget _buildDataAnakTab() {
-    return Scaffold(
-      backgroundColor: _background,
-      appBar: AppBar(
-        title: const Text('Data Anak'),
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            onPressed: () => context.push('/anak/tambah'),
-            icon: const Icon(Icons.add_rounded),
-          ),
-        ],
-      ),
-      body: const Center(
-        child: Text('Tab Data Anak — akan diisi di fitur anak'),
-      ),
-    );
-  }
+  return const DataAnakScreen();
+}
 
   // ── JADWAL TAB ────────────────────────────────────────
   Widget _buildJadwalTab() {
-    return Scaffold(
-      backgroundColor: _background,
-      appBar: AppBar(
-        title: const Text('Jadwal Posyandu'),
-        automaticallyImplyLeading: false,
-      ),
-      body: const Center(
-        child: Text('Tab Jadwal — akan diisi di fitur jadwal'),
-      ),
-    );
-  }
+  return const JadwalScreen();
+}
 }
 
 class _MenuData {

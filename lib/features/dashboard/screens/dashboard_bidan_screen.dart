@@ -287,7 +287,7 @@ class _DashboardBidanScreenState extends State<DashboardBidanScreen> {
         label: 'Input\nImunisasi',
         color: const Color(0xFF6F42C1),
         bgColor: const Color(0xFFF0EBFF),
-        onTap: () => context.push('/anak'),
+        onTap: () => context.push('/imunisasi/catat'),
       ),
       _MenuData(
         icon: Icons.bar_chart_rounded,
