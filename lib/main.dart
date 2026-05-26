@@ -1,12 +1,17 @@
 // lib/main.dart
+//
+// PERBAIKAN:
+// - Router dibuat dengan createRouter() yang menerima authProvider langsung
+//   (bukan context.read di dalam Builder yang bisa race condition)
+// - Urutan init sudah benar
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'core/network/api_client.dart';
-import 'router/app_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-// ── Import semua Provider per fitur ───────────────────────
+import 'core/network/api_client.dart';
+import 'router/app_router.dart';
+
 import 'features/auth/providers/auth_provider.dart';
 import 'features/dashboard/providers/dashboard_provider.dart';
 import 'features/anak/providers/anak_provider.dart';
@@ -17,10 +22,8 @@ import 'features/notifikasi/providers/notifikasi_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-    await initializeDateFormatting('id_ID', null); // ← wajib ada
-  // Inisialisasi API Client (Dio)
+  await initializeDateFormatting('id_ID', null);
   ApiClient.instance.init();
-
   runApp(const SipandaApp());
 }
 
@@ -39,9 +42,10 @@ class SipandaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => JadwalProvider()),
         ChangeNotifierProvider(create: (_) => NotifikasiProvider()),
       ],
-      child: Builder(
-        builder: (context) {
-          final router = AppRouter.createRouter(context);
+      child: Consumer<AuthProvider>(
+        builder: (context, authProvider, _) {
+          // Router dibuat SEKALI dan di-refresh via refreshListenable
+          final router = AppRouter.createRouter(authProvider);
           return MaterialApp.router(
             title: 'SIPANDA',
             debugShowCheckedModeBanner: false,
@@ -54,14 +58,14 @@ class SipandaApp extends StatelessWidget {
   }
 
   ThemeData _buildTheme() {
-    const Color primary     = Color(0xFF0D6EFD);
-    const Color background  = Color(0xFFF7F9FC);
-    const Color cardWhite   = Color(0xFFFFFFFF);
-    const Color textDark    = Color(0xFF1E293B);
-    const Color textGrey    = Color(0xFF64748B);
-    const Color border      = Color(0xFFE2E8F0);
+    const Color primary = Color(0xFF0D6EFD);
+    const Color background = Color(0xFFF7F9FC);
+    const Color cardWhite = Color(0xFFFFFFFF);
+    const Color textDark = Color(0xFF1E293B);
+    const Color textGrey = Color(0xFF64748B);
+    const Color border = Color(0xFFE2E8F0);
     const Color borderLight = Color(0xFFF1F5F9);
-    const Color danger      = Color(0xFFDC3545);
+    const Color danger = Color(0xFFDC3545);
 
     return ThemeData(
       useMaterial3: true,
@@ -72,7 +76,6 @@ class SipandaApp extends StatelessWidget {
       ),
       scaffoldBackgroundColor: background,
 
-      // ── AppBar ──────────────────────────────────
       appBarTheme: const AppBarTheme(
         backgroundColor: cardWhite,
         foregroundColor: textDark,
@@ -86,7 +89,6 @@ class SipandaApp extends StatelessWidget {
         iconTheme: IconThemeData(color: textDark),
       ),
 
-      // ── Card ────────────────────────────────────
       cardTheme: CardThemeData(
         color: cardWhite,
         elevation: 0,
@@ -97,7 +99,6 @@ class SipandaApp extends StatelessWidget {
         margin: EdgeInsets.zero,
       ),
 
-      // ── ElevatedButton ──────────────────────────
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
@@ -107,14 +108,10 @@ class SipandaApp extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
+          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
       ),
 
-      // ── OutlinedButton ──────────────────────────
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: primary,
@@ -123,19 +120,17 @@ class SipandaApp extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
+          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
       ),
 
-      // ── InputDecoration ─────────────────────────
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: borderLight,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -156,22 +151,15 @@ class SipandaApp extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: danger, width: 1.5),
         ),
-        hintStyle: const TextStyle(
-          fontSize: 14,
-          color: Color(0xFFCBD5E1),
-        ),
+        hintStyle: const TextStyle(fontSize: 14, color: Color(0xFFCBD5E1)),
         labelStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w600,
           color: textGrey,
         ),
-        errorStyle: const TextStyle(
-          fontSize: 12,
-          color: danger,
-        ),
+        errorStyle: const TextStyle(fontSize: 12, color: danger),
       ),
 
-      // ── BottomNavigationBar ─────────────────────
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: cardWhite,
         selectedItemColor: primary,
@@ -185,23 +173,16 @@ class SipandaApp extends StatelessWidget {
         unselectedLabelStyle: TextStyle(fontSize: 11),
       ),
 
-      // ── Divider ─────────────────────────────────
       dividerTheme: const DividerThemeData(
         color: border,
         thickness: 1,
         space: 0,
       ),
 
-      // ── SnackBar ────────────────────────────────
       snackBarTheme: SnackBarThemeData(
         backgroundColor: textDark,
-        contentTextStyle: const TextStyle(
-          fontSize: 14,
-          color: cardWhite,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        contentTextStyle: const TextStyle(fontSize: 14, color: cardWhite),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         behavior: SnackBarBehavior.floating,
       ),
     );

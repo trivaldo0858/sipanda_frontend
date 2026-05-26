@@ -7,58 +7,93 @@ class ApiException implements Exception {
   final int? statusCode;
   final Map<String, dynamic>? errors;
 
-  ApiException({
-    required this.message,
-    this.statusCode,
-    this.errors,
-  });
+  ApiException({required this.message, this.statusCode, this.errors});
 
+  /// Parse dari DioException — handle semua format response Laravel
   factory ApiException.fromDio(DioException e) {
     final response = e.response;
 
+    // Tidak ada response (timeout, no internet, dll)
     if (response == null) {
-      return ApiException(
-        message: _networkErrorMessage(e.type),
-        statusCode: null,
-      );
+      return switch (e.type) {
+        DioExceptionType.connectionTimeout ||
+        DioExceptionType.sendTimeout ||
+        DioExceptionType.receiveTimeout => ApiException(
+          message: 'Koneksi timeout. Periksa jaringan Anda.',
+          statusCode: null,
+        ),
+        DioExceptionType.connectionError => ApiException(
+          message:
+              'Tidak dapat terhubung ke server. Pastikan server aktif dan IP benar.',
+          statusCode: null,
+        ),
+        _ => ApiException(
+          message: e.message ?? 'Terjadi kesalahan jaringan.',
+          statusCode: null,
+        ),
+      };
     }
 
+    final statusCode = response.statusCode;
     final data = response.data;
-    String msg = 'Terjadi kesalahan.';
-    Map<String, dynamic>? errors;
 
-    if (data is Map<String, dynamic>) {
-      msg    = data['message'] as String? ?? msg;
-      errors = data['errors'] as Map<String, dynamic>?;
-
-      // Gabungkan pesan validasi jika ada
-      if (errors != null) {
-        final validationMessages = errors.values
-            .expand((e) => e is List ? e : [e])
-            .join('\n');
-        if (validationMessages.isNotEmpty) msg = validationMessages;
-      }
-    }
+    // ── Ekstrak pesan error dari response Laravel ──────────────────
+    String message = _extractMessage(data, statusCode);
+    Map<String, dynamic>? errors = _extractErrors(data);
 
     return ApiException(
-      message: msg,
-      statusCode: response.statusCode,
+      message: message,
+      statusCode: statusCode,
       errors: errors,
     );
   }
 
-  /// Cek apakah error ini karena unauthenticated
-  bool get isUnauthorized => statusCode == 401;
+  /// Ambil pesan utama dari berbagai format response Laravel
+  static String _extractMessage(dynamic data, int? statusCode) {
+    if (data == null) return _defaultMessage(statusCode);
 
-  /// Cek apakah error validasi (422)
-  bool get isValidation => statusCode == 422;
+    if (data is Map<String, dynamic>) {
+      // Format: { "message": "...", "errors": {...} }  ← Laravel validation (422)
+      // Format: { "success": false, "message": "..." } ← Custom response
+      final msg = data['message'];
+      if (msg != null && msg.toString().isNotEmpty) {
+        // Jika ada errors, ambil error pertama sebagai pesan utama
+        final errors = data['errors'];
+        if (errors is Map && errors.isNotEmpty) {
+          final firstField = errors.values.first;
+          if (firstField is List && firstField.isNotEmpty) {
+            return firstField.first.toString();
+          }
+        }
+        return msg.toString();
+      }
+    }
 
-  static String _networkErrorMessage(DioExceptionType type) {
-    return switch (type) {
-      DioExceptionType.connectionTimeout => 'Koneksi timeout. Periksa jaringan Anda.',
-      DioExceptionType.receiveTimeout    => 'Server tidak merespons. Coba lagi.',
-      DioExceptionType.connectionError   => 'Tidak dapat terhubung ke server.',
-      _                                  => 'Terjadi kesalahan jaringan.',
+    if (data is String && data.isNotEmpty) return data;
+
+    return _defaultMessage(statusCode);
+  }
+
+  /// Ambil map errors dari response Laravel validation
+  static Map<String, dynamic>? _extractErrors(dynamic data) {
+    if (data is Map<String, dynamic>) {
+      final errors = data['errors'];
+      if (errors is Map<String, dynamic>) return errors;
+    }
+    return null;
+  }
+
+  static String _defaultMessage(int? statusCode) {
+    return switch (statusCode) {
+      400 => 'Permintaan tidak valid.',
+      401 => 'Sesi habis. Silakan login kembali.',
+      403 => 'Anda tidak memiliki akses.',
+      404 => 'Data tidak ditemukan.',
+      422 => 'Data yang dimasukkan tidak valid.',
+      429 => 'Terlalu banyak permintaan. Coba lagi nanti.',
+      500 => 'Terjadi kesalahan pada server.',
+      503 => 'Server sedang tidak tersedia.',
+      _ => 'Terjadi kesalahan (${statusCode ?? "unknown"}).',
     };
   }
 
