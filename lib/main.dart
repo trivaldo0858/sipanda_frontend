@@ -1,10 +1,3 @@
-// lib/main.dart
-//
-// PERBAIKAN:
-// - Router dibuat dengan createRouter() yang menerima authProvider langsung
-//   (bukan context.read di dalam Builder yang bisa race condition)
-// - Urutan init sudah benar
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -23,18 +16,28 @@ import 'features/notifikasi/providers/notifikasi_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('id_ID', null);
+
+  // Inisialisasi Dio
   ApiClient.instance.init();
-  runApp(const SipandaApp());
+
+  // Buat AuthProvider dan jalankan checkSession() sebelum app render
+  // Ini memastikan status login diketahui sebelum GoRouter memutuskan route awal
+  final authProvider = AuthProvider();
+  await authProvider.checkSession();
+
+  runApp(SipandaApp(authProvider: authProvider));
 }
 
 class SipandaApp extends StatelessWidget {
-  const SipandaApp({super.key});
+  final AuthProvider authProvider;
+  const SipandaApp({super.key, required this.authProvider});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        // Gunakan authProvider yang sudah ter-inisialisasi
+        ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
         ChangeNotifierProvider(create: (_) => AnakProvider()),
         ChangeNotifierProvider(create: (_) => PemeriksaanProvider()),
@@ -42,10 +45,9 @@ class SipandaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => JadwalProvider()),
         ChangeNotifierProvider(create: (_) => NotifikasiProvider()),
       ],
-      child: Consumer<AuthProvider>(
-        builder: (context, authProvider, _) {
-          // Router dibuat SEKALI dan di-refresh via refreshListenable
-          final router = AppRouter.createRouter(authProvider);
+      child: Builder(
+        builder: (context) {
+          final router = AppRouter.createRouter(context);
           return MaterialApp.router(
             title: 'SIPANDA',
             debugShowCheckedModeBanner: false,

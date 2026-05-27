@@ -1,12 +1,3 @@
-// lib/router/app_router.dart
-//
-// PERBAIKAN:
-// - createRouter() menerima AuthProvider langsung (bukan BuildContext)
-//   → menghindari race condition & "context not found" error
-// - Splash screen cek session async SATU KALI
-// - refreshListenable → router otomatis re-evaluate redirect saat auth berubah
-// - Redirect tidak async → tidak ada "await" di dalam redirect()
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -29,36 +20,39 @@ import '../features/kms/screens/kms_screen.dart';
 class AppRouter {
   AppRouter._();
 
-  static GoRouter createRouter(AuthProvider authProvider) {
+  static GoRouter createRouter(BuildContext context) {
+    final authProvider = context.read<AuthProvider>();
+
     return GoRouter(
-      initialLocation: '/splash',
+      initialLocation: '/login',
       debugLogDiagnostics: true,
-      refreshListenable: authProvider, // rebuild saat notifyListeners()
+
+      // ── Router refresh otomatis saat AuthStatus berubah ───
+      // Ketika AuthProvider.notifyListeners() dipanggil (login/logout),
+      // GoRouter otomatis menjalankan redirect lagi.
+      refreshListenable: authProvider,
 
       redirect: (context, state) {
         final status = authProvider.status;
-        final location = state.matchedLocation;
+        final isLoginPage = state.matchedLocation == '/login';
 
-        // Masih initial (belum cek session) → tunggu di splash
+        // Selama session masih dicek (initial), tetap di /login (splash)
         if (status == AuthStatus.initial) {
-          return location == '/splash' ? null : '/splash';
+          return isLoginPage ? null : '/login';
         }
 
-        final isAuth = status == AuthStatus.authenticated;
+        final isAuthenticated = status == AuthStatus.authenticated;
 
-        // Belum login
-        if (!isAuth) {
-          if (location == '/login' || location == '/splash') return null;
-          return '/login';
-        }
+        // Belum login → paksa ke /login
+        if (!isAuthenticated && !isLoginPage) return '/login';
 
-        // Sudah login → keluar dari splash/login
-        if (location == '/splash' || location == '/login') {
+        // Sudah login tapi masih di /login → arahkan ke dashboard sesuai role
+        if (isAuthenticated && isLoginPage) {
           return switch (authProvider.user?.role) {
-            'Kader' => '/dashboard/kader',
-            'Bidan' => '/dashboard/bidan',
+            'Kader'    => '/dashboard/kader',
+            'Bidan'    => '/dashboard/bidan',
             'OrangTua' => '/dashboard/ortu',
-            _ => '/login',
+            _          => '/login',
           };
         }
 
@@ -66,21 +60,11 @@ class AppRouter {
       },
 
       routes: [
-        // ── Splash ────────────────────────────────────────
-        GoRoute(
-          path: '/splash',
-          name: 'splash',
-          builder: (context, state) => const _SplashScreen(),
-        ),
-
-        // ── Login ─────────────────────────────────────────
         GoRoute(
           path: '/login',
           name: 'login',
           builder: (context, state) => const LoginScreen(),
         ),
-
-        // ── Dashboard ─────────────────────────────────────
         GoRoute(
           path: '/dashboard/kader',
           name: 'dashboard-kader',
@@ -96,8 +80,6 @@ class AppRouter {
           name: 'dashboard-ortu',
           builder: (context, state) => const DashboardOrtuScreen(),
         ),
-
-        // ── Anak ──────────────────────────────────────────
         GoRoute(
           path: '/anak',
           name: 'anak',
@@ -119,15 +101,11 @@ class AppRouter {
             return DetailAnakScreen(nikAnak: nik);
           },
         ),
-
-        // ── Pemeriksaan ───────────────────────────────────
         GoRoute(
           path: '/pemeriksaan/catat',
           name: 'pemeriksaan-catat',
           builder: (context, state) => const PilihAnakPemeriksaanScreen(),
         ),
-
-        // ── Imunisasi ─────────────────────────────────────
         GoRoute(
           path: '/imunisasi/catat',
           name: 'imunisasi-catat',
@@ -136,22 +114,16 @@ class AppRouter {
             return CatatImunisasiScreen(nikAnak: nikAnak);
           },
         ),
-
-        // ── Jadwal ────────────────────────────────────────
         GoRoute(
           path: '/jadwal',
           name: 'jadwal',
           builder: (context, state) => const JadwalScreen(),
         ),
-
-        // ── Notifikasi ────────────────────────────────────
         GoRoute(
           path: '/notifikasi',
           name: 'notifikasi',
           builder: (context, state) => const NotifikasiScreen(),
         ),
-
-        // ── KMS ───────────────────────────────────────────
         GoRoute(
           path: '/kms/:nik',
           name: 'kms',
@@ -160,8 +132,6 @@ class AppRouter {
             return KmsScreen(nikAnak: nik);
           },
         ),
-
-        // ── Placeholder ───────────────────────────────────
         GoRoute(
           path: '/laporan',
           name: 'laporan',
@@ -181,16 +151,11 @@ class AppRouter {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.error_outline_rounded,
-                size: 64,
-                color: Color(0xFFDC3545),
-              ),
+              const Icon(Icons.error_outline_rounded,
+                  size: 64, color: Color(0xFFDC3545)),
               const SizedBox(height: 16),
-              const Text(
-                'Halaman tidak ditemukan',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
+              const Text('Halaman tidak ditemukan',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () => context.go('/login'),
@@ -204,77 +169,6 @@ class AppRouter {
   }
 }
 
-// ── Splash Screen ─────────────────────────────────────────────────────
-class _SplashScreen extends StatefulWidget {
-  const _SplashScreen();
-  @override
-  State<_SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<_SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Panggil checkSession SATU KALI — GoRouter auto-redirect via refreshListenable
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AuthProvider>().checkSession();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Color(0xFFF0F4F8),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: Color(0xFF0D6EFD),
-                borderRadius: BorderRadius.all(Radius.circular(16)),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Icon(
-                  Icons.local_hospital_rounded,
-                  color: Colors.white,
-                  size: 40,
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            Text(
-              'SIPANDA',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF1E293B),
-                letterSpacing: 1,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Sistem Informasi Posyandu',
-              style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
-            ),
-            SizedBox(height: 40),
-            SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                color: Color(0xFF0D6EFD),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Placeholder Screen ────────────────────────────────────────────────
 class _PlaceholderScreen extends StatelessWidget {
   final String title;
   const _PlaceholderScreen({required this.title});
@@ -287,21 +181,15 @@ class _PlaceholderScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.construction_rounded,
-              size: 48,
-              color: Color(0xFF64748B),
-            ),
+            const Icon(Icons.construction_rounded,
+                size: 48, color: Color(0xFF64748B)),
             const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
+            Text(title,
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
-            const Text(
-              'Segera hadir',
-              style: TextStyle(color: Color(0xFF64748B)),
-            ),
+            const Text('Segera hadir',
+                style: TextStyle(color: Color(0xFF64748B))),
           ],
         ),
       ),

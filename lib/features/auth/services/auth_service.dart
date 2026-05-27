@@ -29,10 +29,7 @@ class AuthService {
     try {
       final res = await _dio.post(
         ApiConstants.loginKader,
-        data: {
-          'id_posyandu': idPosyandu,
-          'password_kader': passwordKader,
-        },
+        data: {'id_posyandu': idPosyandu, 'password_kader': passwordKader},
       );
       final data = res.data['data'] as Map<String, dynamic>;
       final user = AuthUser.fromKaderResponse(data);
@@ -51,10 +48,7 @@ class AuthService {
     try {
       final res = await _dio.post(
         ApiConstants.loginBidan,
-        data: {
-          'username': username,
-          'password': password,
-        },
+        data: {'username': username, 'password': password},
       );
       final data = res.data['data'] as Map<String, dynamic>;
       final user = AuthUser.fromBidanResponse(data);
@@ -73,10 +67,7 @@ class AuthService {
     try {
       final res = await _dio.post(
         ApiConstants.loginOrangTua,
-        data: {
-          'nik_anak': nikAnak,
-          'tgl_lahir': tglLahir,
-        },
+        data: {'nik_anak': nikAnak, 'tgl_lahir': tglLahir},
       );
       final data = res.data['data'] as Map<String, dynamic>;
       final user = AuthUser.fromOrangTuaResponse(data);
@@ -98,7 +89,7 @@ class AuthService {
     }
   }
 
-  // ── CEK SESSION (sudah login atau belum) ───────────────
+  // ── CEK SESSION ────────────────────────────────────────
   Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
@@ -110,7 +101,7 @@ class AuthService {
     return prefs.getString('auth_role');
   }
 
-  // ── PRIVATE: Simpan session ke SharedPreferences ───────
+  // ── PRIVATE: Simpan session ────────────────────────────
   Future<void> _saveSession(AuthUser user) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('auth_token', user.token ?? '');

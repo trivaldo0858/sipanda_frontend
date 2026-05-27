@@ -13,7 +13,7 @@ import '../services/auth_service.dart';
 enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
 
 class AuthProvider extends ChangeNotifier {
-  final AuthService _service = AuthService();
+  final dynamic _service = AuthService();
 
   AuthStatus _status = AuthStatus.initial;
   AuthUser? _user;
@@ -33,20 +33,24 @@ class AuthProvider extends ChangeNotifier {
   List<PosyanduItem> get posyanduList => _posyanduList;
   bool get posyanduLoading => _posyanduLoading;
 
-  // ── Cek session saat app start (dipanggil dari SplashScreen) ─────
   Future<void> checkSession() async {
-    // Jika sudah dicek sebelumnya, skip
-    if (_status != AuthStatus.initial) return;
-
-    final loggedIn = await _service.isLoggedIn();
-    if (loggedIn) {
-      final role = await _service.getSavedRole();
-      _user = AuthUser(idUser: 0, role: role ?? 'Kader');
-      _status = AuthStatus.authenticated;
-    } else {
-      _status = AuthStatus.unauthenticated;
-    }
+    _status = AuthStatus.loading;
     notifyListeners();
+    try {
+      // Pengecekan aman
+      _user = await _service.checkSession();
+      _status = _user != null
+          ? AuthStatus.authenticated
+          : AuthStatus.unauthenticated;
+    } catch (e) {
+      // AMANKAN DI SINI: Jika ada NoSuchMethodError lagi, paksa aplikasi lepas dari status loading
+      debugPrint('[AuthProvider] Terjadi kesalahan checkSession: $e');
+      _status = AuthStatus.unauthenticated;
+      _user = null;
+      _errorMessage = e.toString();
+    } finally {
+      notifyListeners(); // MENJAMIN SCREEN LOADING LEPAS DAN MASUK KE LOGIN FORM
+    }
   }
 
   // ── Load daftar posyandu (dropdown Kader) ─────────────
