@@ -23,6 +23,10 @@ class DashboardOrtuScreen extends StatefulWidget {
 class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
   int _currentIndex = 0;
 
+  // State lokal interaktif untuk menampung perubahan input edit data profil
+  String? _customNamaAnak;
+  String? _customAlamat;
+
   static const Color _primary     = Color(0xFF0D6EFD);
   static const Color _primaryDark = Color(0xFF0A58CA);
   static const Color _textDark    = Color(0xFF1E293B);
@@ -44,6 +48,77 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
       final dt = DateTime.parse(tgl);
       return DateFormat('d MMM yyyy', 'id_ID').format(dt);
     } catch (_) { return tgl; }
+  }
+
+  // Fungsi pembantu interaktif untuk memunculkan Modal Bottom Sheet Form Pengeditan
+  void _bukaModalEditProfil(String namaSekarang, String alamatSekarang) {
+    final TextEditingController namaEditController = TextEditingController(text: namaSekarang);
+    final TextEditingController alamatEditController = TextEditingController(text: alamatSekarang);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+            left: 24,
+            right: 24,
+            top: 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(width: 40, height: 4, decoration: BoxDecoration(color: _border, borderRadius: BorderRadius.circular(2))),
+              ),
+              const SizedBox(height: 20),
+              const Text('Edit Data Profil Anak', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _textDark)),
+              const SizedBox(height: 20),
+              TextField(
+                controller: namaEditController,
+                decoration: InputDecoration(
+                  labelText: 'Nama Lengkap Anak',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.face_rounded),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: alamatEditController,
+                decoration: InputDecoration(
+                  labelText: 'Alamat Tinggal',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.location_on_outlined),
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _customNamaAnak = namaEditController.text;
+                    _customAlamat = alamatEditController.text;
+                  });
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Profil anak berhasil diubah secara lokal!')),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF006192),
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Simpan Perubahan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -465,49 +540,200 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
   }
 
   // ══════════════════════════════════════════════════════
-  // PROFIL TAB
+  // PROFIL TAB 
   // ══════════════════════════════════════════════════════
   Widget _buildProfilTab() {
-    return Scaffold(
-      backgroundColor: _background,
-      appBar: AppBar(
-        title: const Text('Profil'),
-        automaticallyImplyLeading: false,
-        backgroundColor: _cardWhite,
-        foregroundColor: _textDark,
-        elevation: 0,
-      ),
-      body: Consumer<AuthProvider>(
-        builder: (context, auth, _) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+    return Consumer2<AuthProvider, DashboardProvider>(
+      builder: (context, auth, dashboardProvider, _) {
+        if (dashboardProvider.isLoading) {
+          return const Center(child: CircularProgressIndicator(color: Color(0xFF006699)));
+        }
+
+        final listAnak = dashboardProvider.ortuData?.daftarAnak ?? [];
+
+        if (listAnak.isEmpty) {
+          return const Center(
+            child: Text('Belum ada data anak terdaftar di database Laravel.', style: TextStyle(color: _textGrey)),
+          );
+        }
+
+        final anakUtama = listAnak.first;
+        
+       
+        final String namaAnak = _customNamaAnak ?? anakUtama.namaAnak;
+        final String umurAnak = anakUtama.umurFormat;
+        final String nik = anakUtama.nikAnak;
+        final String tanggalLahir = _formatTanggal(anakUtama.tglLahir);
+        
+        final String namaIbu = auth.user?.namaIbu ?? 'adel';
+        final String alamat = _customAlamat ?? 'Jl. Melati No. 12, Bandung';
+        
+
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8FAFC),
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            automaticallyImplyLeading: false,
+            title: const Text(
+              'Profil Anak',
+              style: TextStyle(color: Color(0xFF006699), fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.settings, color: Color(0xFF006699)),
+                onPressed: () {},
+              ),
+            ],
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 20),
+                // 1. KARTU PROFIL UTAMA (MELENGKUNG INDAH)
                 Container(
-                  width: 80, height: 80,
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 24),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD1E7DD),
-                    borderRadius: BorderRadius.circular(24),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(32),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
                   ),
-                  child: const Icon(Icons.family_restroom_rounded,
-                      color: Color(0xFF198754), size: 40),
+                  child: Column(
+                    children: [
+                      Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: const Color(0xFF0284C7), width: 2.5),
+                            ),
+                            child: const CircleAvatar(
+                              radius: 55,
+                              backgroundColor: Color(0xFFE2E8F0),
+                              child: Icon(Icons.face, size: 55, color: Color(0xFF94A3B8)),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: const BoxDecoration(color: Color(0xFF0284C7), shape: BoxShape.circle),
+                            child: const Icon(Icons.edit, size: 12, color: Colors.white),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        namaAnak,
+                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(color: const Color(0xFFE0F2FE), borderRadius: BorderRadius.circular(20)),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.scale, size: 14, color: Color(0xFF0284C7)),
+                            const SizedBox(width: 6),
+                            Text(
+                              umurAnak,
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0369A1)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 28),
+
+                // 2. KELOMPOK BARIS DATA ANAK
+                const Text(
+                  'DATA ANAK',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF64748B), letterSpacing: 0.8),
+                ),
+                const SizedBox(height: 8),
+
+                _buildProfilComponentTile(icon: Icons.fingerprint, title: 'NIK', value: nik),
+                const SizedBox(height: 12),
+
+                Row(
+                  children: [
+                    Expanded(child: _buildProfilComponentGridTile(icon: Icons.male, title: 'JENIS KELAMIN', value: 'Laki-laki')),
+                    const SizedBox(width: 12),
+                    Expanded(child: _buildProfilComponentGridTile(icon: Icons.calendar_month, title: 'TANGGAL LAHIR', value: tanggalLahir)),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // 3. KELOMPOK DATA ORANG TUA (SUDAH DIHAPUS FIELD NAMA AYAH SESUAI KEINGINAN)
+                const Text(
+                  'DATA ORANG TUA',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF64748B), letterSpacing: 0.8),
+                ),
+                const SizedBox(height: 8),
+
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  width: double.infinity,
+                  decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(16)),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.face_3_outlined, color: Color(0xFF0284C7), size: 22),
+                      const SizedBox(width: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('NAMA IBU', style: TextStyle(fontSize: 10, color: Color(0xFF64748B), fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 4),
+                          Text(namaIbu, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B), fontSize: 14)),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 12),
-                Text(auth.user?.namaIbu ?? 'Orang Tua',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: _textDark)),
-                const SizedBox(height: 4),
-                const Text('Akun Orang Tua', style: TextStyle(fontSize: 13, color: _textGrey)),
-                const SizedBox(height: 40),
+
+                _buildProfilComponentTile(icon: Icons.location_on_outlined, title: 'ALAMAT', value: alamat),
+                const SizedBox(height: 28),
+
+                // 4. ACTION BUTTONS: TOMBOL EDIT SEKARANG SUDAH AKTIF INTERAKTIF POP-UP B BOTTOM SHEET
+                ElevatedButton.icon(
+                  onPressed: () => _bukaModalEditProfil(namaAnak, alamat),
+                  icon: const Icon(Icons.edit_note, size: 20, color: Colors.white),
+                  label: const Text('Edit Data Profil', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF006192),
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 0,
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 16),
+
+                // 5. TOMBOL LOGOUT MERAH UTUH BESERTA DIALOG KONFIRMASI NYATA
                 SizedBox(
-                  width: double.infinity, height: 52,
+                  width: double.infinity,
+                  height: 50,
                   child: ElevatedButton.icon(
                     onPressed: () async {
                       final confirm = await showDialog<bool>(
                         context: context,
                         builder: (_) => AlertDialog(
                           title: const Text('Konfirmasi Logout'),
-                          content: const Text('Yakin ingin keluar?'),
+                          content: const Text('Yakin ingin keluar dari akun SIPANDA Anda?'),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context, false),
@@ -515,8 +741,7 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
                             ),
                             TextButton(
                               onPressed: () => Navigator.pop(context, true),
-                              child: const Text('Keluar',
-                                  style: TextStyle(color: Color(0xFFDC3545))),
+                              child: const Text('Keluar', style: TextStyle(color: Color(0xFFDC3545))),
                             ),
                           ],
                         ),
@@ -528,17 +753,61 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFDC3545),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 0,
                     ),
                     icon: const Icon(Icons.logout_rounded, color: Colors.white, size: 20),
-                    label: const Text('Keluar dari Akun',
-                        style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
+                    label: const Text(
+                      'Keluar dari Akun',
+                      style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
+                const SizedBox(height: 24),
               ],
             ),
-          );
-        },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildProfilComponentTile({required IconData icon, required String title, required String value}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(16)),
+      child: Row(
+        children: [
+          Icon(icon, color: const Color(0xFF0284C7), size: 22),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 10, color: Color(0xFF64748B), fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text(value, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B), fontSize: 14)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfilComponentGridTile({required IconData icon, required String title, required String value}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(16)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: const Color(0xFF0284C7), size: 22),
+          const SizedBox(height: 12),
+          Text(title, style: const TextStyle(fontSize: 10, color: Color(0xFF64748B), fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B), fontSize: 14)),
+        ],
       ),
     );
   }
@@ -566,7 +835,6 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
   String?              _error;
 
   static const Color _primary     = Color(0xFF0D6EFD);
-  static const Color _primaryDark = Color(0xFF0A58CA);
   static const Color _textDark    = Color(0xFF1E293B);
   static const Color _textGrey    = Color(0xFF64748B);
   static const Color _background  = Color(0xFFF7F9FC);
@@ -582,7 +850,6 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
   Future<void> _load() async {
     setState(() { _isLoading = true; _error = null; });
     try {
-      // Load KMS dan Imunisasi bersamaan
       final results = await Future.wait([
         _kmsService.getKms(widget.nikAnak),
         _imunService.getRiwayat(widget.nikAnak),
@@ -635,7 +902,6 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Header
           Row(
             children: [
               Container(
@@ -655,15 +921,12 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
           ),
           const SizedBox(height: 20),
 
-          // Grafik
           _buildGrafik(data),
           const SizedBox(height: 20),
 
-          // Riwayat Imunisasi
           _buildImunisasiSection(),
           const SizedBox(height: 20),
 
-          // Kunjungan Rutin
           _buildKunjunganSection(data),
           const SizedBox(height: 32),
         ],
@@ -736,7 +999,6 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
     );
   }
 
-  // ── Riwayat Imunisasi ─────────────────────────────────
   Widget _buildImunisasiSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -818,7 +1080,6 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
     );
   }
 
-  // ── Kunjungan Rutin ───────────────────────────────────
   Widget _buildKunjunganSection(KmsModel data) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -910,9 +1171,6 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// GRAFIK PERTUMBUHAN
-// ══════════════════════════════════════════════════════════
 class _GrafikPertumbuhan extends StatelessWidget {
   final List<KmsPemeriksaan> pemeriksaan;
   const _GrafikPertumbuhan({required this.pemeriksaan});
