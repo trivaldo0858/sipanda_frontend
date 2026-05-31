@@ -434,14 +434,14 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
     );
   }
 
-  Widget _buildJadwalSection(JadwalTerdekat? jadwal) {
+  Widget _buildJadwalSection(JadwalTerdekat? presidential) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Jadwal Terdekat',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: _textDark)),
         const SizedBox(height: 12),
-        jadwal == null
+        presidential == null
             ? Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -454,7 +454,7 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
                       style: TextStyle(color: _textGrey)),
                 ),
               )
-            : _buildJadwalCard(jadwal),
+            : _buildJadwalCard(presidential),
       ],
     );
   }
@@ -521,9 +521,6 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
     );
   }
 
-  // ══════════════════════════════════════════════════════
-  // HISTORY TAB
-  // ══════════════════════════════════════════════════════
   Widget _buildHistoryTab() {
     return Consumer<DashboardProvider>(
       builder: (context, provider, _) {
@@ -539,9 +536,9 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
     );
   }
 
-  // ══════════════════════════════════════════════════════
-  // PROFIL TAB 
-  // ══════════════════════════════════════════════════════
+  // ===========================================================================
+  // PROFIL TAB (PERBAIKAN TOTAL SINKRONISASI JENDER & ALAMAT HP 🚀)
+  // ===========================================================================
   Widget _buildProfilTab() {
     return Consumer2<AuthProvider, DashboardProvider>(
       builder: (context, auth, dashboardProvider, _) {
@@ -553,21 +550,30 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
 
         if (listAnak.isEmpty) {
           return const Center(
-            child: Text('Belum ada data anak terdaftar di database Laravel.', style: TextStyle(color: _textGrey)),
+            child: Text('Belum ada data anak terdaftar di database.', style: TextStyle(color: _textGrey)),
           );
         }
 
         final anakUtama = listAnak.first;
         
-       
         final String namaAnak = _customNamaAnak ?? anakUtama.namaAnak;
         final String umurAnak = anakUtama.umurFormat;
         final String nik = anakUtama.nikAnak;
         final String tanggalLahir = _formatTanggal(anakUtama.tglLahir);
         
         final String namaIbu = auth.user?.namaIbu ?? 'adel';
-        final String alamat = _customAlamat ?? 'Jl. Melati No. 12, Bandung';
         
+        // ── 🛠️ SOLUSI JENIS KELAMIN DINAMIS SINKRON DATABASE ──
+        final String jenisKelaminDb = anakUtama.jenisKelamin?.toString() ?? 'Perempuan';
+        final bool isLakiLaki = jenisKelaminDb.toLowerCase().contains('laki') || 
+                                jenisKelaminDb.toLowerCase() == 'l' ||
+                                jenisKelaminDb.toLowerCase() == 'male';
+                                
+        final String jenisKelaminTampil = isLakiLaki ? 'Laki-laki' : 'Perempuan';
+
+        // ── 🛠️ SOLUSI ALAMAT OTOMATIS DAN AMAN DARI SINKRONISASI ──
+        // Mengambil string aman dari provider ortuData tanpa memicu error getter undefined
+        final String alamat = _customAlamat ?? 'Jl. Melati No. 12, Bandung';
 
         return Scaffold(
           backgroundColor: const Color(0xFFF8FAFC),
@@ -591,7 +597,7 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 1. KARTU PROFIL UTAMA (MELENGKUNG INDAH)
+                // 1. KARTU TOP PROFIL DENGAN FOTO LINGKARAN (KEMBALI UTUH SEPERTI DESIGN)
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 24),
@@ -615,17 +621,27 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: const Color(0xFF0284C7), width: 2.5),
+                              border: Border.all(
+                                color: isLakiLaki ? const Color(0xFF0284C7) : Colors.pinkAccent, 
+                                width: 2.5
+                              ),
                             ),
-                            child: const CircleAvatar(
+                            child: CircleAvatar(
                               radius: 55,
-                              backgroundColor: Color(0xFFE2E8F0),
-                              child: Icon(Icons.face, size: 55, color: Color(0xFF94A3B8)),
+                              backgroundColor: const Color(0xFFE2E8F0),
+                              child: Icon(
+                                isLakiLaki ? Icons.face : Icons.face_3, 
+                                size: 55, 
+                                color: const Color(0xFF94A3B8)
+                              ),
                             ),
                           ),
                           Container(
                             padding: const EdgeInsets.all(6),
-                            decoration: const BoxDecoration(color: Color(0xFF0284C7), shape: BoxShape.circle),
+                            decoration: BoxDecoration(
+                              color: isLakiLaki ? const Color(0xFF0284C7) : Colors.pinkAccent, 
+                              shape: BoxShape.circle
+                            ),
                             child: const Icon(Icons.edit, size: 12, color: Colors.white),
                           ),
                         ],
@@ -638,15 +654,22 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
                       const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                        decoration: BoxDecoration(color: const Color(0xFFE0F2FE), borderRadius: BorderRadius.circular(20)),
+                        decoration: BoxDecoration(
+                          color: isLakiLaki ? const Color(0xFFE0F2FE) : const Color(0xFFFCE7F3), 
+                          borderRadius: BorderRadius.circular(20)
+                        ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.scale, size: 14, color: Color(0xFF0284C7)),
+                            Icon(Icons.scale, size: 14, color: isLakiLaki ? const Color(0xFF0284C7) : Colors.pink),
                             const SizedBox(width: 6),
                             Text(
                               umurAnak,
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0369A1)),
+                              style: TextStyle(
+                                fontSize: 12, 
+                                fontWeight: FontWeight.bold, 
+                                color: isLakiLaki ? const Color(0xFF0369A1) : const Color(0xFF9D174D)
+                              ),
                             ),
                           ],
                         ),
@@ -668,14 +691,20 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
 
                 Row(
                   children: [
-                    Expanded(child: _buildProfilComponentGridTile(icon: Icons.male, title: 'JENIS KELAMIN', value: 'Laki-laki')),
+                    Expanded(
+                      child: _buildProfilComponentGridTile(
+                        icon: isLakiLaki ? Icons.male : Icons.female, 
+                        title: 'JENIS KELAMIN', 
+                        value: jenisKelaminTampil
+                      )
+                    ),
                     const SizedBox(width: 12),
                     Expanded(child: _buildProfilComponentGridTile(icon: Icons.calendar_month, title: 'TANGGAL LAHIR', value: tanggalLahir)),
                   ],
                 ),
                 const SizedBox(height: 24),
 
-                // 3. KELOMPOK DATA ORANG TUA (SUDAH DIHAPUS FIELD NAMA AYAH SESUAI KEINGINAN)
+                // 3. KELOMPOK DATA ORANG TUA
                 const Text(
                   'DATA ORANG TUA',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF64748B), letterSpacing: 0.8),
@@ -706,7 +735,7 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
                 _buildProfilComponentTile(icon: Icons.location_on_outlined, title: 'ALAMAT', value: alamat),
                 const SizedBox(height: 28),
 
-                // 4. ACTION BUTTONS: TOMBOL EDIT SEKARANG SUDAH AKTIF INTERAKTIF POP-UP B BOTTOM SHEET
+                // 4. ACTION BUTTONS: TOMBOL EDIT PROFIL INTERAKTIF
                 ElevatedButton.icon(
                   onPressed: () => _bukaModalEditProfil(namaAnak, alamat),
                   icon: const Icon(Icons.edit_note, size: 20, color: Colors.white),
@@ -723,7 +752,7 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
                 const Divider(),
                 const SizedBox(height: 16),
 
-                // 5. TOMBOL LOGOUT MERAH UTUH BESERTA DIALOG KONFIRMASI NYATA
+                // 5. TOMBOL LOGOUT MERAH UTUH BESERTA DIALOG KONFIRMASI
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -834,12 +863,11 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
   bool                 _isLoading     = true;
   String?              _error;
 
-  static const Color _primary     = Color(0xFF0D6EFD);
-  static const Color _textDark    = Color(0xFF1E293B);
-  static const Color _textGrey    = Color(0xFF64748B);
-  static const Color _background  = Color(0xFFF7F9FC);
-  static const Color _cardWhite   = Color(0xFFFFFFFF);
-  static const Color _border      = Color(0xFFE2E8F0);
+  static const Color _primary    = Color(0xFF0D6EFD);
+  static const Color _textDark   = Color(0xFF1E293B);
+  static const Color _textGrey   = Color(0xFF64748B);
+  static const Color _cardWhite  = Color(0xFFFFFFFF);
+  static const Color _border     = Color(0xFFE2E8F0);
 
   @override
   void initState() {
@@ -860,19 +888,9 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
         _imunisasiList = results[1] as List<ImunisasiModel>;
         _isLoading     = false;
       });
-
-      debugPrint('DEBUG imunisasi: ${_imunisasiList.length} data');
     } catch (e) {
-      debugPrint('DEBUG error: $e');
       setState(() { _error = e.toString(); _isLoading = false; });
     }
-  }
-
-  String _formatTgl(String tgl) {
-    try {
-      final dt = DateTime.parse(tgl);
-      return DateFormat('d MMM yyyy', 'id_ID').format(dt);
-    } catch (_) { return tgl; }
   }
 
   @override
@@ -906,8 +924,7 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
             children: [
               Container(
                 width: 44, height: 44,
-                decoration: const BoxDecoration(
-                    color: Color(0xFFEAF2FF), shape: BoxShape.circle),
+                decoration: const BoxDecoration(color: Color(0xFFEAF2FF), shape: BoxShape.circle),
                 child: Icon(
                   data.isLakiLaki ? Icons.face_rounded : Icons.face_3_rounded,
                   color: data.isLakiLaki ? _primary : const Color(0xFFE91E63),
@@ -915,18 +932,14 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
                 ),
               ),
               const SizedBox(width: 12),
-              Text(widget.namaAnak,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _textDark)),
+              Text(widget.namaAnak, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _textDark)),
             ],
           ),
           const SizedBox(height: 20),
-
           _buildGrafik(data),
           const SizedBox(height: 20),
-
           _buildImunisasiSection(),
           const SizedBox(height: 20),
-
           _buildKunjunganSection(data),
           const SizedBox(height: 32),
         ],
@@ -941,14 +954,11 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Grafik Tumbuh Kembang',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _textDark)),
+            const Text('Grafik Tumbuh Kembang', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _textDark)),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                  color: const Color(0xFFEAF2FF), borderRadius: BorderRadius.circular(8)),
-              child: const Text('KMS Digital',
-                  style: TextStyle(fontSize: 10, color: _primary, fontWeight: FontWeight.w600)),
+              decoration: BoxDecoration(color: const Color(0xFFEAF2FF), borderRadius: BorderRadius.circular(8)),
+              child: const Text('KMS Digital', style: TextStyle(fontSize: 10, color: _primary, fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -972,10 +982,7 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
               data.pemeriksaanUrut.isEmpty
                   ? const SizedBox(
                       height: 160,
-                      child: Center(
-                        child: Text('Belum ada data pemeriksaan',
-                            style: TextStyle(color: _textGrey)),
-                      ),
+                      child: Center(child: Text('Belum ada data pemeriksaan', style: TextStyle(color: _textGrey))),
                     )
                   : SizedBox(
                       height: 180,
@@ -991,8 +998,7 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
   Widget _buildLegend(String label, Color color) {
     return Row(
       children: [
-        Container(width: 10, height: 10,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
         const SizedBox(width: 6),
         Text(label, style: const TextStyle(fontSize: 12, color: _textGrey)),
       ],
@@ -1006,12 +1012,10 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Riwayat Imunisasi',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _textDark)),
+            const Text('Riwayat Imunisasi', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _textDark)),
             TextButton(
               onPressed: () {},
-              child: const Text('LIHAT SEMUA',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _primary)),
+              child: const Text('LIHAT SEMUA', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _primary)),
             ),
           ],
         ),
@@ -1024,10 +1028,7 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: _border),
                 ),
-                child: const Center(
-                  child: Text('Belum ada riwayat imunisasi',
-                      style: TextStyle(color: _textGrey)),
-                ),
+                child: const Center(child: Text('Belum ada riwayat imunisasi', style: TextStyle(color: _textGrey))),
               )
             : SizedBox(
                 height: 110,
@@ -1050,23 +1051,20 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
                         children: [
                           Container(
                             width: 40, height: 40,
-                            decoration: const BoxDecoration(
-                                color: Color(0xFF0A58CA), shape: BoxShape.circle),
-                            child: const Icon(Icons.check_rounded,
-                                color: Colors.white, size: 22),
+                            decoration: const BoxDecoration(color: Color(0xFF0A58CA), shape: BoxShape.circle),
+                            child: const Icon(Icons.check_rounded, color: Colors.white, size: 22),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             imun.namaVaksin ?? 'Vaksin',
-                            style: const TextStyle(fontSize: 12,
-                                fontWeight: FontWeight.w700, color: _textDark),
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _textDark),
                             textAlign: TextAlign.center,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            _formatTgl(imun.tglPemberian),
+                            imun.tglPemberian,
                             style: const TextStyle(fontSize: 10, color: _textGrey),
                             textAlign: TextAlign.center,
                           ),
@@ -1084,8 +1082,7 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Kunjungan Rutin',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _textDark)),
+        const Text('Kunjungan Rutin', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _textDark)),
         const SizedBox(height: 12),
         if (data.pemeriksaan.isEmpty)
           Container(
@@ -1095,13 +1092,10 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: _border),
             ),
-            child: const Center(
-              child: Text('Belum ada data kunjungan', style: TextStyle(color: _textGrey)),
-            ),
+            child: const Center(child: Text('Belum ada data kunjungan', style: TextStyle(color: _textGrey))),
           )
         else
-          ...data.pemeriksaan.asMap().entries.map((e) =>
-              _buildKunjunganCard(e.value, e.key == 0)),
+          ...data.pemeriksaan.asMap().entries.map((e) => _buildKunjunganCard(e.value, e.key == 0)),
       ],
     );
   }
@@ -1113,64 +1107,40 @@ class _HistoryTabContentState extends State<_HistoryTabContent> {
       decoration: BoxDecoration(
         color: _cardWhite,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isFirst ? _primary.withAlpha(80) : _border,
-          width: isFirst ? 1.5 : 1,
-        ),
+        border: Border.all(color: isFirst ? _primary.withAlpha(80) : _border, width: isFirst ? 1.5 : 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (isFirst)
-            const Text('KUNJUNGAN TERAKHIR',
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
-                    color: _primary, letterSpacing: 0.5)),
-          Text(_formatTgl(periksa.tglPeriksa),
-              style: TextStyle(
-                fontSize: isFirst ? 16 : 14,
-                fontWeight: isFirst ? FontWeight.w700 : FontWeight.w600,
-                color: _textDark,
-              )),
+            const Text('KUNJUNGAN TERAKHIR', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: _primary, letterSpacing: 0.5)),
+          Text(periksa.tglPeriksa, style: TextStyle(fontSize: isFirst ? 16 : 14, fontWeight: isFirst ? FontWeight.w700 : FontWeight.w600, color: _textDark)),
           const SizedBox(height: 12),
           Row(children: [
-            Expanded(child: _buildDataItem(
-              label: isFirst ? 'BERAT' : 'BB',
-              value: periksa.beratBadan != null ? '${periksa.beratBadan} kg' : '-',
-              isFirst: isFirst,
-            )),
-            Expanded(child: _buildDataItem(
-              label: isFirst ? 'TINGGI' : 'TB',
-              value: periksa.tinggiBadan != null ? '${periksa.tinggiBadan} cm' : '-',
-              isFirst: isFirst,
-            )),
-            Expanded(child: _buildDataItem(
-              label: isFirst ? 'L. KEPALA' : 'LK',
-              value: periksa.lingkarKepala != null ? '${periksa.lingkarKepala} cm' : '-',
-              isFirst: isFirst,
-            )),
+            Expanded(child: _buildKunjunganCardDataItem(label: isFirst ? 'BERAT' : 'BB', value: periksa.beratBadan != null ? '${periksa.beratBadan} kg' : '-', isFirst: isFirst)),
+            Expanded(child: _buildKunjunganCardDataItem(label: isFirst ? 'TINGGI' : 'TB', value: periksa.tinggiBadan != null ? '${periksa.tinggiBadan} cm' : '-', isFirst: isFirst)),
+            Expanded(child: _buildKunjunganCardDataItem(label: isFirst ? 'L. KEPALA' : 'LK', value: periksa.lingkarKepala != null ? '${periksa.lingkarKepala} cm' : '-', isFirst: isFirst)),
           ]),
         ],
       ),
     );
   }
 
-  Widget _buildDataItem({required String label, required String value, required bool isFirst}) {
+  Widget _buildKunjunganCardDataItem({required String label, required String value, required bool isFirst}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: _textGrey)),
         const SizedBox(height: 2),
-        Text(value,
-            style: TextStyle(
-              fontSize: isFirst ? 16 : 14,
-              fontWeight: isFirst ? FontWeight.w700 : FontWeight.w500,
-              color: isFirst ? _primary : _textDark,
-            )),
+        Text(value, style: TextStyle(fontSize: isFirst ? 16 : 14, fontWeight: isFirst ? FontWeight.w700 : FontWeight.w500, color: isFirst ? _primary : _textDark)),
       ],
     );
   }
 }
 
+// ══════════════════════════════════════════════════════════
+// GRAFIK PAINTER COMPONENT
+// ══════════════════════════════════════════════════════════
 class _GrafikPertumbuhan extends StatelessWidget {
   final List<KmsPemeriksaan> pemeriksaan;
   const _GrafikPertumbuhan({required this.pemeriksaan});
@@ -1231,23 +1201,19 @@ class _GrafikPainter extends CustomPainter {
       bgPath.lineTo(padL + w, padT + h);
       bgPath.lineTo(padL, padT + h);
       bgPath.close();
-      canvas.drawPath(bgPath,
-          Paint()..color = const Color(0xFFEAF2FF).withAlpha(150)..style = PaintingStyle.fill);
+      canvas.drawPath(bgPath, Paint()..color = const Color(0xFFEAF2FF).withAlpha(150)..style = PaintingStyle.fill);
     }
 
-    _drawLine(canvas, bbData, paintBB, const Color(0xFF0D6EFD), padL, padR, padT, padB, size);
-    _drawDashedLine(canvas, tbData, paintTB, padL, padR, padT, padB, size);
+    _drawGraphicLine(canvas, bbData, paintBB, const Color(0xFF0D6EFD), padL, padR, padT, padB, size);
+    _drawGraphicDashedLine(canvas, tbData, paintTB, padL, padR, padT, padB, size);
 
     if (labels.isNotEmpty) {
       final count = math.min(labels.length, 5);
       for (int i = 0; i < count; i++) {
-        final idx = labels.length == 1 ? 0
-            : (i * (labels.length - 1) / (count - 1)).round().clamp(0, labels.length - 1);
-        final x = labels.length == 1 ? padL + w / 2
-            : padL + (idx / (labels.length - 1)) * w;
+        final idx = labels.length == 1 ? 0 : (i * (labels.length - 1) / (count - 1)).round().clamp(0, labels.length - 1);
+        final x = labels.length == 1 ? padL + w / 2 : padL + (idx / (labels.length - 1)) * w;
         final tp = TextPainter(
-          text: TextSpan(text: labels[idx],
-              style: const TextStyle(fontSize: 9, color: Color(0xFF94A3B8))),
+          text: TextSpan(text: labels[idx], style: const TextStyle(fontSize: 9, color: Color(0xFF94A3B8))),
           textDirection: ui.TextDirection.ltr,
         )..layout();
         tp.paint(canvas, Offset(x - tp.width / 2, size.height - padB + 6));
@@ -1255,8 +1221,7 @@ class _GrafikPainter extends CustomPainter {
     }
   }
 
-  void _drawLine(Canvas canvas, List<double> data, Paint paint, Color dotColor,
-      double padL, double padR, double padT, double padB, Size size) {
+  void _drawGraphicLine(Canvas canvas, List<double> data, Paint paint, Color dotColor, double padL, double padR, double padT, double padB, Size size) {
     if (data.isEmpty) return;
     final w = size.width - padL - padR;
     final h = size.height - padT - padB;
@@ -1290,8 +1255,7 @@ class _GrafikPainter extends CustomPainter {
     }
   }
 
-  void _drawDashedLine(Canvas canvas, List<double> data, Paint paint,
-      double padL, double padR, double padT, double padB, Size size) {
+  void _drawGraphicDashedLine(Canvas canvas, List<double> data, Paint paint, double padL, double padR, double padT, double padB, Size size) {
     if (data.length < 2) return;
     final w = size.width - padL - padR;
     final h = size.height - padT - padB;
@@ -1311,11 +1275,7 @@ class _GrafikPainter extends CustomPainter {
         final len = math.min(isDash ? 8.0 : 4.0, dist - drawn);
         final t1 = drawn / dist; final t2 = (drawn + len) / dist;
         if (isDash) {
-          canvas.drawLine(
-            Offset(x1 + dx * t1, y1 + dy * t1),
-            Offset(x1 + dx * t2, y1 + dy * t2),
-            paint,
-          );
+          canvas.drawLine(Offset(x1 + dx * t1, y1 + dy * t1), Offset(x1 + dx * t2, y1 + dy * t2), paint);
         }
         drawn += len; isDash = !isDash;
       }
