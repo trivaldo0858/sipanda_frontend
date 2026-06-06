@@ -43,13 +43,11 @@ class _LoginScreenState extends State<LoginScreen>
 
   // Colors
   static const _primary = Color(0xFF1B6CA8);
-  static const _accent = Color(0xFF00BFA6);
   static const _textDark = Color(0xFF0D1B2A);
   static const _textGrey = Color(0xFF5C7A99);
   static const _inputBg = Color(0xFFF0F6FF);
   static const _border = Color(0xFFD0E4F7);
   static const _white = Colors.white;
-  static const _bg = Color(0xFFF0F6FF);
 
   @override
   void initState() {
@@ -210,172 +208,116 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _bg,
-      body: Stack(
-        children: [
-          // Gradient top
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: MediaQuery.of(context).size.height * 0.5,
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF0A2E6E),
-                    Color(0xFF1565C0),
-                    Color(0xFF0277BD),
-                    Color(0xFF00838F),
-                  ],
-                  stops: [0.0, 0.35, 0.7, 1.0],
-                ),
-              ),
-              child: CustomPaint(painter: _RipplePainter()),
-            ),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF0A2E6E),
+              Color(0xFF1565C0),
+              Color(0xFF0277BD),
+              Color(0xFF00838F),
+            ],
+            stops: [0.0, 0.35, 0.7, 1.0],
           ),
-
-          // Content center
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 32,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // ── Logo + Judul ───────────────────────
-                    _buildHeader(),
-                    const SizedBox(height: 32),
-
-                    // ── Card ──────────────────────────────
-                    _selectedRole == -1
-                        ? _buildLandingCard()
-                        : SlideTransition(
-                            position: _formSlide,
-                            child: FadeTransition(
-                              opacity: _formFade,
-                              child: _buildFormCard(),
-                            ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'SIPANDA',
+                    style: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.w900,
+                      color: _white,
+                      letterSpacing: 3,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Sistem Posyandu Anak Digital',
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: _white.withOpacity(0.8),
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  const SizedBox(height: 36),
+                  // ── Card ──────────────────────────────
+                  _selectedRole == -1
+                      ? _buildLandingCard()
+                      : SlideTransition(
+                          position: _formSlide,
+                          child: FadeTransition(
+                            opacity: _formFade,
+                            child: _buildFormCard(),
                           ),
-                  ],
-                ),
+                        ),
+                ],
               ),
             ),
           ),
-        ],
+        ),
       ),
-    );
-  }
-
-  // ── Header ───────────────────────────────────────────────
-  Widget _buildHeader() {
-    return Column(
-      children: [
-        // Logo icon
-        Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(
-            color: _white.withOpacity(0.18),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: _white.withOpacity(0.3), width: 1.5),
-          ),
-          child: const Icon(
-            Icons.local_hospital_rounded,
-            color: _white,
-            size: 34,
-          ),
-        ),
-        const SizedBox(height: 14),
-        const Text(
-          'SIPANDA',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w900,
-            color: _white,
-            letterSpacing: 2.5,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'Sistem Posyandu Anak Digital',
-          style: TextStyle(
-            fontSize: 13,
-            color: _white.withOpacity(0.75),
-            fontWeight: FontWeight.w400,
-            letterSpacing: 0.3,
-          ),
-        ),
-      ],
     );
   }
 
   // ── Landing Card ─────────────────────────────────────────
-  Widget _buildLandingCard() {
-    return _card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'Selamat Datang',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: _textDark,
-            ),
+  Widget _buildLandingCard() => _card(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text(
+          'Masuk sebagai',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: _textDark,
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Pilih peran Anda untuk melanjutkan',
-            style: TextStyle(fontSize: 13, color: _textGrey.withOpacity(0.85)),
-          ),
-          const SizedBox(height: 24),
-
-          _roleBtn(
-            0,
-            Icons.people_alt_rounded,
-            'Kader',
-            const Color(0xFF1565C0),
-            const Color(0xFFE3F2FD),
-          ),
-          const SizedBox(height: 10),
-          _roleBtn(
-            1,
-            Icons.medical_services_rounded,
-            'Bidan',
-            const Color(0xFF00838F),
-            const Color(0xFFE0F7FA),
-          ),
-          const SizedBox(height: 10),
-          _roleBtn(
-            2,
-            Icons.family_restroom_rounded,
-            'Orang Tua',
-            const Color(0xFF2E7D32),
-            const Color(0xFFE8F5E9),
-          ),
-
-          const SizedBox(height: 20),
-          Center(
-            child: Text(
-              'Belum terdaftar? Hubungi petugas posyandu',
-              style: TextStyle(
-                fontSize: 12,
-                color: _textGrey.withOpacity(0.65),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Pilih peran Anda untuk melanjutkan',
+          style: TextStyle(fontSize: 13, color: _textGrey.withOpacity(0.85)),
+        ),
+        const SizedBox(height: 22),
+        _roleBtn(
+          0,
+          Icons.people_alt_rounded,
+          'Kader',
+          const Color(0xFF1565C0),
+          const Color(0xFFE3F2FD),
+        ),
+        const SizedBox(height: 10),
+        _roleBtn(
+          1,
+          Icons.medical_services_rounded,
+          'Bidan',
+          const Color(0xFF00838F),
+          const Color(0xFFE0F7FA),
+        ),
+        const SizedBox(height: 10),
+        _roleBtn(
+          2,
+          Icons.family_restroom_rounded,
+          'Orang Tua',
+          const Color(0xFF2E7D32),
+          const Color(0xFFE8F5E9),
+        ),
+        const SizedBox(height: 20),
+      ],
+    ),
+  );
 
   Widget _roleBtn(int idx, IconData icon, String label, Color color, Color bg) {
     return GestureDetector(
@@ -471,7 +413,7 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
 
           Text(
             'Halo, ${info.label}!',
@@ -486,7 +428,7 @@ class _LoginScreenState extends State<LoginScreen>
             info.sub,
             style: TextStyle(fontSize: 13, color: _textGrey.withOpacity(0.85)),
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 20),
 
           // Form content
           if (_selectedRole == 0)
@@ -507,14 +449,14 @@ class _LoginScreenState extends State<LoginScreen>
       0 => (
         icon: Icons.people_alt_rounded,
         label: 'Kader',
-        sub: 'Pilih posyandu & masukkan kata sandi',
+        sub: 'Pilih lokasi posyandu & masukkan kata sandi',
         color: const Color(0xFF1565C0),
         bg: const Color(0xFFE3F2FD),
       ),
       1 => (
         icon: Icons.medical_services_rounded,
         label: 'Bidan',
-        sub: 'Masukkan username & kata sandi',
+        sub: 'Masukkan nama pengguna & kata sandi',
         color: const Color(0xFF00838F),
         bg: const Color(0xFFE0F7FA),
       ),
@@ -529,84 +471,78 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   // ── Form Kader ───────────────────────────────────────────
-  Widget _kaderForm() {
-    return Consumer<AuthProvider>(
-      key: const ValueKey('k'),
-      builder: (_, auth, __) => Form(
-        key: _kaderFormKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _lbl('Lokasi Posyandu'),
-            const SizedBox(height: 8),
-            auth.posyanduLoading
-                ? _loadBox()
-                : _dropdownPosyandu(auth.posyanduList),
-            const SizedBox(height: 14),
-            _lbl('Kata Sandi'),
-            const SizedBox(height: 8),
-            _passF(
-              _kaderPasswordCtrl,
-              'Kata sandi posyandu',
-              _kaderObscure,
-              () => setState(() => _kaderObscure = !_kaderObscure),
-              (v) => (v == null || v.isEmpty) ? 'Kata sandi wajib diisi' : null,
-            ),
-            const SizedBox(height: 24),
-            _submitBtn(
-              'Masuk sebagai Kader',
-              auth.isLoading,
-              _loginKader,
-              const Color(0xFF1565C0),
-            ),
-            const SizedBox(height: 14),
-            _footer(),
-          ],
-        ),
+  Widget _kaderForm() => Consumer<AuthProvider>(
+    key: const ValueKey('k'),
+    builder: (_, auth, __) => Form(
+      key: _kaderFormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _lbl('Lokasi Posyandu'),
+          const SizedBox(height: 8),
+          auth.posyanduLoading
+              ? _loadBox()
+              : _dropdownPosyandu(auth.posyanduList),
+          const SizedBox(height: 14),
+          _lbl('Kata Sandi'),
+          const SizedBox(height: 8),
+          _passF(
+            _kaderPasswordCtrl,
+            'Kata sandi posyandu',
+            _kaderObscure,
+            () => setState(() => _kaderObscure = !_kaderObscure),
+            (v) => (v == null || v.isEmpty) ? 'Kata sandi wajib diisi' : null,
+          ),
+          const SizedBox(height: 24),
+          _submitBtn(
+            'Masuk sebagai Kader',
+            auth.isLoading,
+            _loginKader,
+            const Color(0xFF1565C0),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
 
   // ── Form Bidan ───────────────────────────────────────────
-  Widget _bidanForm() {
-    return Consumer<AuthProvider>(
-      key: const ValueKey('b'),
-      builder: (_, auth, __) => Form(
-        key: _bidanFormKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _lbl('Nama Pengguna'),
-            const SizedBox(height: 8),
-            _txtF(
-              _bidanUsernameCtrl,
-              'Username bidan',
-              (v) => (v == null || v.isEmpty) ? 'Username wajib diisi' : null,
-            ),
-            const SizedBox(height: 14),
-            _lbl('Kata Sandi'),
-            const SizedBox(height: 8),
-            _passF(
-              _bidanPasswordCtrl,
-              'Kata sandi',
-              _bidanObscure,
-              () => setState(() => _bidanObscure = !_bidanObscure),
-              (v) => (v == null || v.isEmpty) ? 'Kata sandi wajib diisi' : null,
-            ),
-            const SizedBox(height: 24),
-            _submitBtn(
-              'Masuk sebagai Bidan',
-              auth.isLoading,
-              _loginBidan,
-              const Color(0xFF00838F),
-            ),
-            const SizedBox(height: 14),
-            _footer(),
-          ],
-        ),
+  Widget _bidanForm() => Consumer<AuthProvider>(
+    key: const ValueKey('b'),
+    builder: (_, auth, __) => Form(
+      key: _bidanFormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _lbl('Nama Pengguna'),
+          const SizedBox(height: 8),
+          _txtF(
+            _bidanUsernameCtrl,
+            'Username bidan',
+            (v) => (v == null || v.isEmpty) ? 'Username wajib diisi' : null,
+          ),
+          const SizedBox(height: 14),
+          _lbl('Kata Sandi'),
+          const SizedBox(height: 8),
+          _passF(
+            _bidanPasswordCtrl,
+            'Kata sandi',
+            _bidanObscure,
+            () => setState(() => _bidanObscure = !_bidanObscure),
+            (v) => (v == null || v.isEmpty) ? 'Kata sandi wajib diisi' : null,
+          ),
+          const SizedBox(height: 24),
+          _submitBtn(
+            'Masuk sebagai Bidan',
+            auth.isLoading,
+            _loginBidan,
+            const Color(0xFF00838F),
+          ),
+          const SizedBox(height: 14),
+          _footer(),
+        ],
       ),
-    );
-  }
+    ),
+  );
 
   // ── Form Orang Tua ───────────────────────────────────────
   Widget _ortuForm() {
@@ -751,32 +687,44 @@ class _LoginScreenState extends State<LoginScreen>
     ),
   );
 
-  Widget _dropdownPosyandu(List<PosyanduItem> list) =>
-      DropdownButtonFormField<PosyanduItem>(
-        value: _selectedPosyandu,
-        hint: Text(
-          'Pilih unit posyandu',
-          style: TextStyle(fontSize: 14, color: _textGrey.withOpacity(0.55)),
-        ),
-        items: list
-            .map(
-              (p) => DropdownMenuItem(
-                value: p,
+  Widget _dropdownPosyandu(List<PosyanduItem> list) => ButtonTheme(
+    // SOLUSI KUNCI: Memaksa lebar pop-up menu sejajar presisi dengan form field
+    alignedDropdown: true,
+    child: DropdownButtonFormField<PosyanduItem>(
+      value: _selectedPosyandu,
+      hint: Text(
+        'Pilih unit posyandu',
+        style: TextStyle(fontSize: 14, color: _textGrey.withOpacity(0.55)),
+      ),
+      itemHeight: 50.0, // Mempertahankan ruang anti-overflow 6 piksel
+      menuMaxHeight: 300.0, // Membatasi tinggi pop-up menu
+      items: list
+          .map(
+            (p) => DropdownMenuItem(
+              value: p,
+              child: SizedBox(
+                height: 56,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       p.namaPosyandu,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: _textDark,
                       ),
                     ),
+                    const SizedBox(height: 2),
                     if (p.desaKelurahan.isNotEmpty)
                       Text(
                         '${p.desaKelurahan}, ${p.kecamatan}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 11,
                           color: _textGrey.withOpacity(0.8),
@@ -785,16 +733,25 @@ class _LoginScreenState extends State<LoginScreen>
                   ],
                 ),
               ),
-            )
-            .toList(),
-        onChanged: (v) => setState(() => _selectedPosyandu = v),
-        validator: (v) => v == null ? 'Pilih posyandu terlebih dahulu' : null,
-        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: _textGrey),
-        decoration: _deco(),
-        dropdownColor: _white,
-        borderRadius: BorderRadius.circular(12),
-        isExpanded: true,
-      );
+            ),
+          )
+          .toList(),
+      onChanged: (v) => setState(() => _selectedPosyandu = v),
+      validator: (v) => v == null ? 'Pilih posyandu terlebih dahulu' : null,
+      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: _textGrey),
+      decoration: _deco().copyWith(
+        isDense: false,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+        // Catatan: Horizontal diubah ke 0 karena alignedDropdown otomatis memberi padding internal yang rapi
+      ),
+      dropdownColor: _white,
+      borderRadius: BorderRadius.circular(
+        12,
+      ), // Mengatur lengkungan sudut pop-up
+      isExpanded:
+          true, // Memastikan teks di dalam field memanfaatkan ruang penuh
+    ),
+  );
 
   Widget _loadBox() => Container(
     height: 52,
