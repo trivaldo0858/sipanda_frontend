@@ -335,7 +335,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
                   const SizedBox(width: 6),
                   const Padding(
                     padding: EdgeInsets.only(bottom: 4),
-                    child: Text('anak',
+                    child: Text('Balita',
                         style: TextStyle(fontSize: 14, color: _textGrey)),
                   ),
                 ],

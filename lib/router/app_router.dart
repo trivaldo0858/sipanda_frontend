@@ -18,6 +18,7 @@ import '../features/imunisasi/screens/catat_imunisasi_screen.dart';
 import '../features/jadwal/screens/jadwal_screen.dart';
 import '../features/notifikasi/screens/notifikasi_screen.dart';
 import '../features/kms/screens/kms_screen.dart';
+import '../features/laporan/screens/laporan_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -125,17 +126,10 @@ class AppRouter {
 
         // ── Placeholder ───────────────────────────────
         GoRoute(
-          path: '/laporan',
-          name: 'laporan',
-          builder: (context, state) =>
-              const _PlaceholderScreen(title: 'Laporan'),
-        ),
-        GoRoute(
-          path: '/profil',
-          name: 'profil',
-          builder: (context, state) =>
-              const _PlaceholderScreen(title: 'Profil'),
-        ),
+  path: '/laporan',
+  name: 'laporan',
+  builder: (context, state) => const LaporanScreen(),
+),
       ],
 
       errorBuilder: (context, state) => Scaffold(

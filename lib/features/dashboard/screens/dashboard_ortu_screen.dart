@@ -104,12 +104,17 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
   Widget _buildBerandaTab() {
     return Consumer<DashboardProvider>(
       builder: (context, provider, _) {
-        return RefreshIndicator(
+        return Scaffold(
+          backgroundColor: _background,
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(80),
+            child: _buildAppBar(),
+          ),
+          body: RefreshIndicator(
           color: _primary,
           onRefresh: () => provider.loadOrtu(),
           child: CustomScrollView(
             slivers: [
-              SliverToBoxAdapter(child: _buildAppBar()),
               if (provider.isLoading)
                 const SliverFillRemaining(
                   child: Center(child: CircularProgressIndicator(color: _primary)),
@@ -143,6 +148,7 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
                 ),
             ],
           ),
+        ),
         );
       },
     );
@@ -518,12 +524,51 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
       builder: (context, provider, _) {
         final daftarAnak = provider.ortuData?.daftarAnak ?? [];
         if (daftarAnak.isEmpty) {
-          return const Center(
-            child: Text('Belum ada data anak', style: TextStyle(color: _textGrey)),
+          return Scaffold(
+            backgroundColor: _background,
+            appBar: AppBar(
+              backgroundColor: _cardWhite,
+              elevation: 0,
+              automaticallyImplyLeading: false,
+              title: const Text('Riwayat Kesehatan',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _textDark)),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(1),
+                child: Container(height: 1, color: _border),
+              ),
+            ),
+            body: const Center(
+              child: Text('Belum ada data anak', style: TextStyle(color: _textGrey)),
+            ),
           );
         }
         final anak = daftarAnak.first;
-        return _HistoryTabContent(nikAnak: anak.nikAnak, namaAnak: anak.namaAnak);
+        return Scaffold(
+          backgroundColor: _background,
+          appBar: AppBar(
+            backgroundColor: _cardWhite,
+            elevation: 0,
+            automaticallyImplyLeading: false,
+            title: Row(children: [
+              Container(
+                width: 36, height: 36,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEAF2FF),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.history_edu_rounded, color: _primary, size: 20),
+              ),
+              const SizedBox(width: 10),
+              const Text('Riwayat Kesehatan',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _textDark)),
+            ]),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(1),
+              child: Container(height: 1, color: _border),
+            ),
+          ),
+          body: _HistoryTabContent(nikAnak: anak.nikAnak, namaAnak: anak.namaAnak),
+        );
       },
     );
   }
