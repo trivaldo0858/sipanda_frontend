@@ -312,6 +312,23 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
                 Text(anak.umurFormat,
                     style: const TextStyle(fontSize: 13, color: _textGrey)),
               ]),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton.icon(
+                  onPressed: () => context.push('/anak/${anak.nikAnak}'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _primaryDark,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  icon: const Text('Lihat Detail',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
+                  label: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 16),
+                ),
+              ),
             ],
           ),
         ),
@@ -370,23 +387,6 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
                     const Expanded(child: SizedBox()),
                   ]),
                 ],
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: ElevatedButton.icon(
-                    onPressed: () => context.push('/kms/${anak.nikAnak}'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _primaryDark,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    icon: const Text('Lihat Detail',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
-                    label: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 16),
-                  ),
-                ),
               ],
             ),
           ),
@@ -522,6 +522,35 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
   Widget _buildHistoryTab() {
     return Consumer<DashboardProvider>(
       builder: (context, provider, _) {
+        // Tunggu sampai data selesai load
+        if (provider.isLoading || provider.ortuData == null) {
+          return Scaffold(
+            backgroundColor: _background,
+            appBar: AppBar(
+              backgroundColor: _cardWhite,
+              elevation: 0,
+              automaticallyImplyLeading: false,
+              title: Row(children: [
+                Container(
+                  width: 36, height: 36,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEAF2FF),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.history_edu_rounded, color: _primary, size: 20),
+                ),
+                const SizedBox(width: 10),
+                const Text('Riwayat Kesehatan',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _textDark)),
+              ]),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(1),
+                child: Container(height: 1, color: _border),
+              ),
+            ),
+            body: const Center(child: CircularProgressIndicator(color: _primary)),
+          );
+        }
         final daftarAnak = provider.ortuData?.daftarAnak ?? [];
         if (daftarAnak.isEmpty) {
           return Scaffold(
@@ -530,8 +559,19 @@ class _DashboardOrtuScreenState extends State<DashboardOrtuScreen> {
               backgroundColor: _cardWhite,
               elevation: 0,
               automaticallyImplyLeading: false,
-              title: const Text('Riwayat Kesehatan',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _textDark)),
+              title: Row(children: [
+                Container(
+                  width: 36, height: 36,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEAF2FF),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.history_edu_rounded, color: _primary, size: 20),
+                ),
+                const SizedBox(width: 10),
+                const Text('Riwayat Kesehatan',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _textDark)),
+              ]),
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(1),
                 child: Container(height: 1, color: _border),

@@ -28,8 +28,19 @@ class JadwalModel {
       );
 
   // Format tanggal untuk display
-  DateTime get tglDateTime => DateTime.parse(tglKegiatan);
-
+DateTime get tglDateTime {
+  // Ambil hanya bagian tanggal (YYYY-MM-DD) saja
+  final dateOnly = tglKegiatan.split('T').first;
+  final parts = dateOnly.split('-');
+  if (parts.length == 3) {
+    return DateTime(
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+      int.parse(parts[2]),
+    );
+  }
+  return DateTime.parse(tglKegiatan);
+}
   bool get isUpcoming => tglDateTime.isAfter(DateTime.now());
   bool get isPast     => tglDateTime.isBefore(DateTime.now());
 }

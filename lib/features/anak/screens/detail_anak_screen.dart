@@ -144,8 +144,7 @@ class _DetailAnakScreenState extends State<DetailAnakScreen> {
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _textDark)),
           const SizedBox(height: 16),
           _buildInfoRow('Tanggal Lahir', _formatTanggal(anak.tglLahir)),
-          _buildInfoRow('Nama Ayah', anak.namaAyah.isNotEmpty ? anak.namaAyah : '-'),
-          _buildInfoRow('Nama Ibu', anak.namaIbu ?? '-'),
+          _buildInfoRow('Nama Orang Tua', anak.namaIbu ?? '-'),
         ],
       ),
     );
@@ -171,17 +170,6 @@ class _DetailAnakScreenState extends State<DetailAnakScreen> {
           onTap: () => context.push('/kms/${anak.nikAnak}'),
         ),
         const SizedBox(height: 10),
-
-        // Catat Imunisasi — semua role
-        _buildAksiButton(
-          icon: Icons.vaccines_outlined,
-          label: 'Catat Imunisasi',
-          subtitle: 'Riwayat pemberian vaksin',
-          color: const Color(0xFF6F42C1),
-          bgColor: const Color(0xFFF0EBFF),
-          onTap: () => context.push('/imunisasi/catat?nik_anak=${anak.nikAnak}'),
-        ),
-
         // Fitur khusus Kader saja
         if (isKader) ...[
           const SizedBox(height: 10),
