@@ -1,3 +1,5 @@
+// lib/router/app_router.dart
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -27,35 +29,21 @@ class AppRouter {
       initialLocation: '/login',
       debugLogDiagnostics: true,
 
-      // ── Router refresh otomatis saat AuthStatus berubah ───
-      // Ketika AuthProvider.notifyListeners() dipanggil (login/logout),
-      // GoRouter otomatis menjalankan redirect lagi.
-      refreshListenable: authProvider,
-
-      redirect: (context, state) {
-        final status = authProvider.status;
+      redirect: (context, state) async {
+        await authProvider.checkSession();
+        final isLoggedIn  = authProvider.isAuthenticated;
         final isLoginPage = state.matchedLocation == '/login';
+        final role        = authProvider.user?.role;
 
-        // Selama session masih dicek (initial), tetap di /login (splash)
-        if (status == AuthStatus.initial) {
-          return isLoginPage ? null : '/login';
-        }
-
-        final isAuthenticated = status == AuthStatus.authenticated;
-
-        // Belum login → paksa ke /login
-        if (!isAuthenticated && !isLoginPage) return '/login';
-
-        // Sudah login tapi masih di /login → arahkan ke dashboard sesuai role
-        if (isAuthenticated && isLoginPage) {
-          return switch (authProvider.user?.role) {
+        if (!isLoggedIn && !isLoginPage) return '/login';
+        if (isLoggedIn && isLoginPage) {
+          return switch (role) {
             'Kader'    => '/dashboard/kader',
             'Bidan'    => '/dashboard/bidan',
             'OrangTua' => '/dashboard/ortu',
             _          => '/login',
           };
         }
-
         return null;
       },
 
@@ -104,13 +92,15 @@ class AppRouter {
         GoRoute(
           path: '/pemeriksaan/catat',
           name: 'pemeriksaan-catat',
-          builder: (context, state) => const PilihAnakPemeriksaanScreen(),
+          builder: (context, state) =>
+              const PilihAnakPemeriksaanScreen(),
         ),
         GoRoute(
           path: '/imunisasi/catat',
           name: 'imunisasi-catat',
           builder: (context, state) {
-            final nikAnak = state.uri.queryParameters['nik_anak'] ?? '';
+            final nikAnak =
+                state.uri.queryParameters['nik_anak'] ?? '';
             return CatatImunisasiScreen(nikAnak: nikAnak);
           },
         ),
@@ -132,6 +122,8 @@ class AppRouter {
             return KmsScreen(nikAnak: nik);
           },
         ),
+
+        // ── Placeholder ───────────────────────────────
         GoRoute(
           path: '/laporan',
           name: 'laporan',
@@ -155,7 +147,8 @@ class AppRouter {
                   size: 64, color: Color(0xFFDC3545)),
               const SizedBox(height: 16),
               const Text('Halaman tidak ditemukan',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                  style: TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w600)),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () => context.go('/login'),

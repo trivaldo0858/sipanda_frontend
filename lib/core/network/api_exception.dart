@@ -1,65 +1,65 @@
 // lib/core/network/api_exception.dart
-//
-// Pastikan file ini ada — AuthService melempar ApiException.fromDio()
-// Error message yang ditampilkan di LoginScreen berasal dari sini.
 
 import 'package:dio/dio.dart';
 
 class ApiException implements Exception {
   final String message;
   final int? statusCode;
+  final Map<String, dynamic>? errors;
 
-  ApiException({required this.message, this.statusCode});
+  ApiException({
+    required this.message,
+    this.statusCode,
+    this.errors,
+  });
 
-  /// Parse error dari DioException menjadi pesan yang ramah pengguna
   factory ApiException.fromDio(DioException e) {
-    if (e.type == DioExceptionType.connectionTimeout ||
-        e.type == DioExceptionType.receiveTimeout ||
-        e.type == DioExceptionType.sendTimeout) {
+    final response = e.response;
+
+    if (response == null) {
       return ApiException(
-        message:
-            'Koneksi timeout. Pastikan server berjalan dan IP sudah benar.',
+        message: _networkErrorMessage(e.type),
         statusCode: null,
       );
     }
 
-    if (e.type == DioExceptionType.connectionError) {
-      return ApiException(
-        message:
-            'Tidak dapat terhubung ke server. Periksa koneksi dan IP di api_constants.dart.',
-        statusCode: null,
-      );
-    }
+    final data = response.data;
+    String msg = 'Terjadi kesalahan.';
+    Map<String, dynamic>? errors;
 
-    final statusCode = e.response?.statusCode;
-    final data = e.response?.data;
-
-    // Laravel mengembalikan errors dalam format {errors: {field: [msg]}} atau {message: '...'}
     if (data is Map<String, dynamic>) {
-      // Validasi error (422)
-      if (data['errors'] is Map) {
-        final errors = data['errors'] as Map<String, dynamic>;
-        final firstError = errors.values.first;
-        if (firstError is List && firstError.isNotEmpty) {
-          return ApiException(
-            message: firstError.first.toString(),
-            statusCode: statusCode,
-          );
-        }
-      }
-      // Pesan umum
-      if (data['message'] != null) {
-        return ApiException(
-          message: data['message'].toString(),
-          statusCode: statusCode,
-        );
+      msg    = data['message'] as String? ?? msg;
+      errors = data['errors'] as Map<String, dynamic>?;
+
+      // Gabungkan pesan validasi jika ada
+      if (errors != null) {
+        final validationMessages = errors.values
+            .expand((e) => e is List ? e : [e])
+            .join('\n');
+        if (validationMessages.isNotEmpty) msg = validationMessages;
       }
     }
 
     return ApiException(
-      message: 'Terjadi kesalahan (${statusCode ?? 'unknown'}). Coba lagi.',
-      statusCode: statusCode,
+      message: msg,
+      statusCode: response.statusCode,
+      errors: errors,
     );
+  }
+
+  /// Cek apakah error ini karena unauthenticated
+  bool get isUnauthorized => statusCode == 401;
+
+  /// Cek apakah error validasi (422)
+  bool get isValidation => statusCode == 422;
+
+  static String _networkErrorMessage(DioExceptionType type) {
+    return switch (type) {
+      DioExceptionType.connectionTimeout => 'Koneksi timeout. Periksa jaringan Anda.',
+      DioExceptionType.receiveTimeout    => 'Server tidak merespons. Coba lagi.',
+      DioExceptionType.connectionError   => 'Tidak dapat terhubung ke server.',
+      _                                  => 'Terjadi kesalahan jaringan.',
+    };
   }
 
   @override

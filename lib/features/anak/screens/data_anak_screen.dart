@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/anak_provider.dart';
 import '../models/anak_model.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class DataAnakScreen extends StatefulWidget {
   const DataAnakScreen({super.key});
@@ -50,91 +51,6 @@ class _DataAnakScreenState extends State<DataAnakScreen> {
     return list.where((a) => a.jenisKelamin == _filterJK).toList();
   }
 
-  void _showFilterSheet() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            return Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40, height: 4,
-                      decoration: BoxDecoration(
-                        color: _border,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text('Filter Data Balita',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _textDark)),
-                  const SizedBox(height: 16),
-                  const Text('Jenis Kelamin',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _textGrey)),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      _filterChipOption('Semua', setSheetState),
-                      const SizedBox(width: 10),
-                      _filterChipOption('Laki-laki', setSheetState, value: 'L'),
-                      const SizedBox(width: 10),
-                      _filterChipOption('Perempuan', setSheetState, value: 'P'),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Terapkan Filter'),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _filterChipOption(String label, StateSetter setSheetState, {String? value}) {
-    final chipValue  = value ?? 'Semua';
-    final isSelected = _filterJK == chipValue;
-    return GestureDetector(
-      onTap: () {
-        setSheetState(() => _filterJK = chipValue);
-        setState(() => _filterJK = chipValue);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? _primary : const Color(0xFFF1F5F9),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-            color: isSelected ? Colors.white : _textGrey,
-          ),
-        ),
-      ),
-    );
-  }
-
   Future<void> _konfirmasiHapus(BuildContext context, AnakModel anak) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -175,48 +91,36 @@ class _DataAnakScreenState extends State<DataAnakScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final role = context.read<AuthProvider>().user?.role ?? '';
+    final isKader = role == 'Kader';
+
     return Scaffold(
       backgroundColor: _background,
       appBar: AppBar(
         backgroundColor: _cardWhite,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: const Text(
-          'Data Anak',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: _textDark,
-          ),
-        ),
+        title: const Text('Data Anak',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _textDark)),
         centerTitle: false,
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header ────────────────────────────────
           Container(
             color: _cardWhite,
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Data Balita',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: _primary,
-                  ),
-                ),
+                const Text('Data Balita',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: _primary)),
                 const SizedBox(height: 4),
                 const Text(
                   'Kelola informasi kesehatan dan pertumbuhan anak\ndi wilayah Posyandu Anda.',
                   style: TextStyle(fontSize: 13, color: _textGrey, height: 1.4),
                 ),
                 const SizedBox(height: 16),
-
-                // Search + Filter
                 Row(
                   children: [
                     Expanded(
@@ -232,37 +136,16 @@ class _DataAnakScreenState extends State<DataAnakScreen> {
                           decoration: const InputDecoration(
                             hintText: 'Cari nama atau NIK...',
                             hintStyle: TextStyle(fontSize: 14, color: Color(0xFFCBD5E1)),
-                            prefixIcon: Icon(Icons.search_rounded,
-                                color: Color(0xFF94A3B8), size: 20),
+                            prefixIcon: Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 20),
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.symmetric(vertical: 12),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    GestureDetector(
-                      onTap: _showFilterSheet,
-                      child: Container(
-                        width: 46, height: 46,
-                        decoration: BoxDecoration(
-                          color: _filterJK != 'Semua'
-                              ? _primary
-                              : const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.tune_rounded,
-                          color: _filterJK != 'Semua' ? Colors.white : _primary,
-                          size: 22,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 14),
-
-                // ── Filter chip tab ────────────────
                 Row(
                   children: [
                     _buildFilterTab('Semua'),
@@ -272,49 +155,14 @@ class _DataAnakScreenState extends State<DataAnakScreen> {
                     _buildFilterTab('Perempuan', value: 'P'),
                   ],
                 ),
-
-                // Badge filter aktif
-                if (_filterJK != 'Semua') ...[
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEAF2FF),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              _filterJK == 'L' ? 'Laki-laki' : 'Perempuan',
-                              style: const TextStyle(fontSize: 12,
-                                  fontWeight: FontWeight.w600, color: _primary),
-                            ),
-                            const SizedBox(width: 6),
-                            GestureDetector(
-                              onTap: () => setState(() => _filterJK = 'Semua'),
-                              child: const Icon(Icons.close_rounded, size: 14, color: _primary),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
               ],
             ),
           ),
-
-          // ── List Balita ───────────────────────────
           Expanded(
             child: Consumer<AnakProvider>(
               builder: (context, provider, _) {
                 if (provider.isLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(color: _primary),
-                  );
+                  return const Center(child: CircularProgressIndicator(color: _primary));
                 }
 
                 if (provider.status == AnakStatus.error) {
@@ -322,8 +170,7 @@ class _DataAnakScreenState extends State<DataAnakScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.wifi_off_rounded,
-                            size: 48, color: Color(0xFF94A3B8)),
+                        const Icon(Icons.wifi_off_rounded, size: 48, color: Color(0xFF94A3B8)),
                         const SizedBox(height: 12),
                         Text(provider.errorMessage ?? 'Gagal memuat',
                             style: const TextStyle(color: _textGrey)),
@@ -350,22 +197,14 @@ class _DataAnakScreenState extends State<DataAnakScreen> {
                             color: const Color(0xFFEAF2FF),
                             borderRadius: BorderRadius.circular(24),
                           ),
-                          child: const Icon(Icons.child_care_rounded,
-                              color: _primary, size: 40),
+                          child: const Icon(Icons.child_care_rounded, color: _primary, size: 40),
                         ),
                         const SizedBox(height: 16),
                         const Text('Belum ada data balita',
-                            style: TextStyle(fontSize: 16,
-                                fontWeight: FontWeight.w600, color: _textDark)),
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _textDark)),
                         const SizedBox(height: 8),
-                        const Text('Tap + untuk menambah balita baru',
+                        const Text('Belum ada balita terdaftar',
                             style: TextStyle(color: _textGrey)),
-                        const SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          onPressed: () => context.push('/anak/tambah'),
-                          icon: const Icon(Icons.add_rounded),
-                          label: const Text('Tambah Balita'),
-                        ),
                       ],
                     ),
                   );
@@ -379,7 +218,7 @@ class _DataAnakScreenState extends State<DataAnakScreen> {
                     itemCount: filtered.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
-                      return _buildAnakCard(context, filtered[index], provider);
+                      return _buildAnakCard(context, filtered[index], provider, isKader);
                     },
                   ),
                 );
@@ -388,15 +227,17 @@ class _DataAnakScreenState extends State<DataAnakScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/anak/tambah'),
-        backgroundColor: _primary,
-        child: const Icon(Icons.add_rounded, color: Colors.white),
-      ),
+      // Hanya Kader yang bisa tambah balita
+      floatingActionButton: isKader
+          ? FloatingActionButton(
+              onPressed: () => context.push('/anak/tambah'),
+              backgroundColor: _primary,
+              child: const Icon(Icons.add_rounded, color: Colors.white),
+            )
+          : null,
     );
   }
 
-  // ── Filter Tab ────────────────────────────────────────
   Widget _buildFilterTab(String label, {String? value}) {
     final chipValue  = value ?? 'Semua';
     final isSelected = _filterJK == chipValue;
@@ -421,9 +262,8 @@ class _DataAnakScreenState extends State<DataAnakScreen> {
     );
   }
 
-  // ── Kartu Balita ──────────────────────────────────────
   Widget _buildAnakCard(
-      BuildContext context, AnakModel anak, AnakProvider provider) {
+      BuildContext context, AnakModel anak, AnakProvider provider, bool isKader) {
     return Container(
       decoration: BoxDecoration(
         color: _cardWhite,
@@ -432,16 +272,14 @@ class _DataAnakScreenState extends State<DataAnakScreen> {
       ),
       child: Column(
         children: [
-          // Info anak
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
             child: Row(
               children: [
-                // Avatar bulat
                 Container(
                   width: 56, height: 56,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE2E8F0),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE2E8F0),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -455,14 +293,9 @@ class _DataAnakScreenState extends State<DataAnakScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        anak.namaAnak,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: _textDark,
-                        ),
-                      ),
+                      Text(anak.namaAnak,
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w700, color: _textDark)),
                       const SizedBox(height: 3),
                       Text(anak.nikAnak,
                           style: const TextStyle(fontSize: 13, color: _textGrey)),
@@ -472,41 +305,45 @@ class _DataAnakScreenState extends State<DataAnakScreen> {
               ],
             ),
           ),
-
-          // Divider
           const Divider(height: 1, color: Color(0xFFE2E8F0)),
-
-          // Tombol aksi
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _buildActionBtn(
-                    icon: Icons.visibility_outlined,
-                    label: 'Detail',
-                    color: _primary,
-                    onTap: () => context.push('/anak/${anak.nikAnak}'),
+            child: isKader
+                // Kader: Detail + Edit + Hapus
+                ? Row(
+                    children: [
+                      Expanded(child: _buildActionBtn(
+                        icon: Icons.visibility_outlined,
+                        label: 'Detail',
+                        color: _primary,
+                        onTap: () => context.push('/anak/${anak.nikAnak}'),
+                      )),
+                      Expanded(child: _buildActionBtn(
+                        icon: Icons.edit_outlined,
+                        label: 'Edit',
+                        color: _textGrey,
+                        onTap: () => context.push('/anak/tambah', extra: anak),
+                      )),
+                      Expanded(child: _buildActionBtn(
+                        icon: Icons.delete_outline_rounded,
+                        label: 'Hapus',
+                        color: _danger,
+                        onTap: () => _konfirmasiHapus(context, anak),
+                      )),
+                    ],
+                  )
+                // Bidan: Detail saja
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildActionBtn(
+                        icon: Icons.visibility_outlined,
+                        label: 'Detail',
+                        color: _primary,
+                        onTap: () => context.push('/anak/${anak.nikAnak}'),
+                      ),
+                    ],
                   ),
-                ),
-                Expanded(
-                  child: _buildActionBtn(
-                    icon: Icons.edit_outlined,
-                    label: 'Edit',
-                    color: _textGrey,
-                    onTap: () => context.push('/anak/tambah', extra: anak),
-                  ),
-                ),
-                Expanded(
-                  child: _buildActionBtn(
-                    icon: Icons.delete_outline_rounded,
-                    label: 'Hapus',
-                    color: _danger,
-                    onTap: () => _konfirmasiHapus(context, anak),
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),
@@ -523,7 +360,7 @@ class _DataAnakScreenState extends State<DataAnakScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

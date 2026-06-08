@@ -2,21 +2,36 @@
 
 class ApiResponse<T> {
   final bool success;
-  final String? message;
   final T? data;
+  final String? message;
+  final String? error;
 
-  ApiResponse({required this.success, this.message, this.data});
+  const ApiResponse._({
+    required this.success,
+    this.data,
+    this.message,
+    this.error,
+  });
 
-  factory ApiResponse.fromJson(
-    Map<String, dynamic> json,
-    T Function(dynamic)? fromData,
-  ) {
-    return ApiResponse(
-      success: json['success'] as bool? ?? false,
-      message: json['message'] as String?,
-      data: fromData != null && json['data'] != null
-          ? fromData(json['data'])
-          : null,
-    );
+  factory ApiResponse.success(T data, {String? message}) => ApiResponse._(
+        success: true,
+        data: data,
+        message: message,
+      );
+
+  factory ApiResponse.error(String error) => ApiResponse._(
+        success: false,
+        error: error,
+      );
+
+  bool get isSuccess => success && data != null;
+
+  /// Helper untuk handle response dengan mudah
+  R when<R>({
+    required R Function(T data) onSuccess,
+    required R Function(String error) onError,
+  }) {
+    if (isSuccess) return onSuccess(data as T);
+    return onError(error ?? 'Terjadi kesalahan.');
   }
 }
