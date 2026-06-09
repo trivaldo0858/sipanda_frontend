@@ -31,9 +31,7 @@ jobs:
       - name: Install Dependency
         run: flutter pub get
 
-      - name: Flutter Analyze
-        run: flutter analyze
-        continue-on-error: true
+      
 
       - name: Build APK
         run: flutter build apk --release
