@@ -31,16 +31,14 @@ jobs:
       - name: Install Dependency
         run: flutter pub get
 
-      
-
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release --split-per-abi
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-release-arm64-v8a.apk
 
       - name: Send APK to Telegram
         if: always()
@@ -50,7 +48,7 @@ jobs:
           CAPTION="SIPANDA Build Success - Commit: ${SHORT_SHA} - ${BUILD_TIME}"
           curl -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument \
             -F chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-            -F document=@build/app/outputs/flutter-apk/app-release.apk \
+            -F document=@build/app/outputs/flutter-apk/app-release-arm64-v8a.apk \
             -F caption="$CAPTION"
 
       - name: Notify Telegram Success
@@ -72,6 +70,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: "Release ${{ github.ref_name }}"
-          files: build/app/outputs/flutter-apk/app-release.apk
+          files: build/app/outputs/flutter-apk/app-release-arm64-v8a.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
